@@ -11,17 +11,17 @@ pub fn setloglevel(c: &cmd::Cli) {
         }
         1 => {
             let env = Env::default()
-                .filter_or("ZBUS_LOG_LEVEL", "info");
+                .filter_or("ZBUS_LOG_LEVEL", "zbusdg=info");
             env_logger::init_from_env(env);
         }
         2 => {
             let env = Env::default()
-                .filter_or("ZBUS_LOG_LEVEL", "debug");
+                .filter_or("ZBUS_LOG_LEVEL", "zbusdg=debug");
             env_logger::init_from_env(env);
         }
         _ => {
             let env = Env::default()
-                .filter_or("ZBUS_LOG_LEVEL", "trace");
+                .filter_or("ZBUS_LOG_LEVEL", "zbusdg=trace");
             env_logger::init_from_env(env);
         }
     }

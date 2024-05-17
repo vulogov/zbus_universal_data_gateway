@@ -9,6 +9,11 @@ use std::fmt::Debug;
 use crate::stdlib;
 
 pub mod setloglevel;
+pub mod zabbix_lib;
+pub mod zbus_convertkey;
+pub mod zbus_gateway;
+pub mod zbus_gateway_processor;
+pub mod zbus_gateway_stdout_sender;
 pub mod zbus_version;
 pub mod zbus_login;
 
@@ -19,6 +24,14 @@ pub fn init() {
     stdlib::initlib(&cli);
 
     match &cli.command {
+        Commands::Gateway(gateway) => {
+            log::debug!("Execute ZBUSDG");
+            zbus_gateway::run(&cli, &gateway);
+        }
+        Commands::ConvertKey(convertkey) => {
+            log::debug!("Generate ZabbixAPI token");
+            zbus_convertkey::run(&cli, &convertkey);
+        }
         Commands::Login(login) => {
             log::debug!("Generate ZabbixAPI token");
             zbus_login::run(&cli, &login);
@@ -57,7 +70,7 @@ pub struct Cli {
     #[clap(help="Listen address for the stream catcher", long, default_value_t = String::from("0.0.0.0:10055"))]
     pub listen: String,
 
-    #[clap(long, default_value_t = 1, help="Number of catcher threads")]
+    #[clap(long, default_value_t = 16, help="Number of threads in ThreadManager")]
     pub threads: u16,
 
     #[clap(subcommand)]
@@ -81,8 +94,40 @@ pub struct Login {
     pub zabbix_password: String,
 }
 
+#[derive(Args, Clone, Debug)]
+#[clap(about="Convert Zabbix key")]
+pub struct ConvertKey {
+    #[clap(help="Zabbix key", long, default_value_t = String::from("agent.ping"))]
+    pub key: String,
+}
+
+#[derive(Args, Clone, Debug)]
+#[clap(about="Execute ZBUS Universal Data Gateway")]
+pub struct Gateway {
+    #[clap(help="Listen address for the stream catcher", long, default_value_t = String::from("0.0.0.0:10055"))]
+    pub listen: String,
+
+    #[clap(long, default_value_t = 1, help="Number of catcher threads")]
+    pub threads: u16,
+
+    #[clap(flatten)]
+    group: GatewayArgGroup,
+}
+
+#[derive(Debug, Clone, clap::Args)]
+#[group(required = true, multiple = false)]
+pub struct GatewayArgGroup {
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to STDOUT")]
+    pub stdout: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to RAW socket")]
+    pub socket: bool,
+}
+
 #[derive(Subcommand, Clone, Debug)]
 enum Commands {
     Login(Login),
+    ConvertKey(ConvertKey),
+    Gateway(Gateway),
     Version(Version),
 }
