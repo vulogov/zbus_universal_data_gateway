@@ -1,9 +1,116 @@
 extern crate log;
 use crate::cmd;
 use crate::stdlib;
+use nanoid::nanoid;
+use serde_json::{json, Deserializer, Value};
+
+fn zabbix_json_get(data: &Value, key: String) -> Value {
+    match data.get(key) {
+        Some(value) => {
+            return value.clone();
+        }
+        None => {
+            return json!(null);
+        }
+    }
+}
+
+fn zabbix_json_get_raw(data: &Value, key: String) -> Option<Value> {
+    match data.get(key) {
+        Some(value) => {
+            return Some(value.clone());
+        }
+        None => {
+            return None;
+        }
+    }
+}
+
+fn zabbix_json_get_subkey(data: &Value, key: String, subkey: String) -> Value {
+    match data.get(key) {
+        Some(value) => {
+            return zabbix_json_get(value, subkey);
+        }
+        None => {
+            return json!(null);
+        }
+    }
+}
+
+fn zabbix_get_item_info(c: &cmd::Cli, gateway: &cmd::Gateway, itemid: String) -> Option<Value> {
+    match reqwest::blocking::Client::new()
+                .post(format!("{}/api_jsonrpc.php", c.zabbix_api))
+                .bearer_auth(&gateway.zabbix_token)
+                .json(&serde_json::json!({
+                    "jsonrpc": "2.0",
+                    "method": "item.get",
+                    "id": 1,
+                    "params": {
+                        "itemids":      itemid,
+                        "templated":    false,
+                    }
+                }))
+                .send() {
+        Ok(res) => {
+            let jres: serde_json::Value = match res.json() {
+                Ok(jres) => jres,
+                Err(err) => {
+                    log::error!("Error in item.get: {:?}", err);
+                    return None;
+                }
+            };
+            match jres.get("result") {
+                Some(result) => {
+                    match result.as_array() {
+                        Some(item_values) => {
+                            if item_values.len() == 0 {
+                                log::error!("Zabbix item.get returned empty array");
+                                return None;
+                            } else {
+                                return Some(result[0].clone());
+                            }
+                        }
+                        None => {
+                            log::error!("Zabbix item.get returned non-array");
+                            return None;
+                        }
+                    }
+                }
+                None => {
+                    println!("Error in: {:?}", &jres);
+                }
+            }
+        }
+        Err(err) => {
+            log::error!("Error in item.get: {:?}", err);
+        }
+    }
+    None
+}
+
+fn zabbix_get_item_key(c: &cmd::Cli, gateway: &cmd::Gateway, itemid: String) -> Option<String> {
+    match zabbix_get_item_info(c, gateway, itemid) {
+        Some(result) => {
+            match zabbix_json_get_raw(&result, "key_".to_string()) {
+                Some(itemkey) => {
+                    return Some(itemkey.to_string());
+                }
+                None => {
+                    log::error!("Zabbix item.get returned struct that do not have key_");
+                    return None;
+                }
+            }
+        }
+        None => {
+            return None;
+        }
+    }
+}
 
 pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
     log::trace!("zbus_gateway_processor::run() reached");
+    let c = c.clone();
+    let gateway = gateway.clone();
     match stdlib::threads::THREADS.lock() {
         Ok(t) => {
             t.execute(move ||
@@ -13,7 +120,67 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                     if ! stdlib::channel::pipe_is_empty_raw("in".to_string()) {
                         match stdlib::channel::pipe_pull("in".to_string()) {
                             Ok(res) => {
-                                stdlib::channel::pipe_push("out".to_string(), res);
+                                log::debug!("Received {} bytes by processor", &res.len());
+                                let stream = Deserializer::from_str(&res).into_iter::<Value>();
+                                for value in stream {
+                                    match value {
+                                        Ok(zjson) => {
+                                            let itemkey = match zabbix_json_get_raw(&zjson, "itemid".to_string()) {
+                                                Some(jitemid) => match zabbix_get_item_key(&c, &gateway, jitemid.to_string()) {
+                                                    Some(zkey) => zkey,
+                                                    None => continue,
+
+                                                },
+                                                None => {
+                                                    log::error!("Zabbix JSON is malformed. No itemid key");
+                                                    continue;
+                                                }
+                                            };
+                                            let zbus_itemkey = match cmd::zabbix_lib::zabbix_key_to_zenoh(itemkey.clone()) {
+                                                Some(zbus_key) => zbus_key,
+                                                None => continue,
+                                            };
+                                            let data = json!({
+                                                "headers": {
+                                                    "messageType":      "telemetry",
+                                                    "route":            c.route.clone(),
+                                                    "streamName":       c.platform_name.clone(),
+                                                    "cultureCode":      null,
+                                                    "version":          c.protocol_version.clone(),
+                                                    "encryptionAlgorithm":      null,
+                                                    "compressionAlgorithm":     null,
+                                                },
+                                                "body": {
+                                                    "details": {
+                                                        "origin":       zabbix_json_get_subkey(&zjson, "host".to_string(), "host".to_string()),
+                                                        "destination":  zbus_itemkey.clone(),
+                                                        "properties":   {
+                                                            "zabbix_clock":     zabbix_json_get(&zjson, "clock".to_string()),
+                                                            "zabbix_ns":        zabbix_json_get(&zjson, "ns".to_string()),
+                                                            "zabbix_host_name": zabbix_json_get_subkey(&zjson, "host".to_string(), "name".to_string()),
+                                                            "zabbix_itemid":    zabbix_json_get(&zjson, "itemid".to_string()),
+                                                            "zabbix_item":      itemkey.clone(),
+                                                            "name":             zabbix_json_get(&zjson, "name".to_string()),
+                                                            "tags":             zabbix_json_get(&zjson, "tags".to_string()),
+
+                                                        },
+                                                        "details":  {
+                                                            "detailType":   "",
+                                                            "contentType":  zabbix_json_get(&zjson, "type".to_string()),
+                                                            "data":         zabbix_json_get(&zjson, "value".to_string()),
+                                                        }
+                                                    }
+                                                },
+                                                "id": nanoid!(),
+                                            });
+                                            stdlib::channel::pipe_push("out".to_string(), data.to_string());
+                                            // stdlib::channel::pipe_push("out".to_string(), zjson.to_string());
+                                        }
+                                        Err(err) => {
+                                            log::error!("Error converting JSON: {:?}", err);
+                                        }
+                                    }
+                                }
                             }
                             Err(err) => log::error!("Error getting data from channel: {:?}", err),
                         }

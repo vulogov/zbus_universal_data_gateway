@@ -52,7 +52,7 @@ pub struct Cli {
     #[clap(short, long, action = clap::ArgAction::Count, help="Increase verbosity")]
     pub debug: u8,
 
-    #[clap(help="ZBUS telemetry protocol version", long, default_value_t = String::from("v1"))]
+    #[clap(help="ZBUS telemetry protocol version", long, default_value_t = String::from("v2"))]
     pub protocol_version: String,
 
     #[clap(help="ID of the observability platform", long, default_value_t = String::from("local"))]
@@ -60,6 +60,10 @@ pub struct Cli {
 
     #[clap(help="Telemetry source", long, default_value_t = String::from(hostname::get_hostname()))]
     pub source: String,
+
+    #[clap(help="Telemetry route", long, default_value_t = String::from("local"))]
+    pub route: String,
+
 
     #[clap(help="Authentication token", long, default_value_t = String::from(""))]
     pub token: String,
@@ -104,11 +108,17 @@ pub struct ConvertKey {
 #[derive(Args, Clone, Debug)]
 #[clap(about="Execute ZBUS Universal Data Gateway")]
 pub struct Gateway {
+    #[clap(help="Zabbix AUTH token", long, default_value_t = String::from(""))]
+    pub zabbix_token: String,
+
     #[clap(help="Listen address for the stream catcher", long, default_value_t = String::from("0.0.0.0:10055"))]
     pub listen: String,
 
     #[clap(long, default_value_t = 1, help="Number of catcher threads")]
     pub threads: u16,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Display a pretty JSON")]
+    pub pretty: bool,
 
     #[clap(flatten)]
     group: GatewayArgGroup,

@@ -1,5 +1,6 @@
 extern crate log;
 use crate::cmd;
+use crate::stdlib;
 use tiny_http::{Method};
 use std::thread;
 use std::sync::Arc;
@@ -35,7 +36,7 @@ pub fn run(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                         Ok(_) => {
                                             match request.method() {
                                                 Method::Post => {
-                                                    println!("{}", &content);
+                                                    stdlib::channel::pipe_push("in".to_string(), content);
                                                 }
                                                 _ => {
                                                     let response = tiny_http::Response::empty(422);
