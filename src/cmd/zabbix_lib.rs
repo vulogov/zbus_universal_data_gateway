@@ -35,7 +35,7 @@ pub fn zabbix_key_to_zenoh(key: String) -> Option<String> {
                 break;
             }
             Some(Err(err)) => {
-                log::warn!("Error converting Zabbix key {}: {:?}", &lex.slice(), err);
+                log::warn!("Error converting Zabbix key {} = {}: {:?}", &key, &lex.slice(), err);
                 return None;
             }
             None => break,

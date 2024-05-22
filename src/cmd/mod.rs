@@ -138,6 +138,9 @@ pub struct GatewayArgGroup {
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to RAW socket")]
     pub socket: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to NONE")]
+    pub none: bool,
 }
 
 #[derive(Subcommand, Clone, Debug)]

@@ -178,8 +178,6 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                 log::error!("Received JSON is not an object: {}", &zjson);
                                                 continue;
                                             }
-                                            let zjson_map = zjson.as_object().unwrap();
-                                            println!("MAP: {:?}", &zjson_map);
                                             let itemkey = match zabbix_json_get_raw(&zjson, "itemid".to_string()) {
                                                 Some(jitemid) => match zabbix_get_item_key(&c, &gateway, jitemid.to_string()) {
                                                     Some(zkey) => zkey,
@@ -228,7 +226,9 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                 },
                                                 "id": nanoid!(),
                                             });
-                                            stdlib::channel::pipe_push("out".to_string(), data.to_string());
+                                            if ! gateway.group.none {
+                                                stdlib::channel::pipe_push("out".to_string(), data.to_string());
+                                            }
                                             // stdlib::channel::pipe_push("out".to_string(), zjson.to_string());
                                         }
                                         Err(err) => {
