@@ -14,7 +14,7 @@ pub fn sender(_c: &cmd::Cli, gateway: &cmd::Gateway)  {
         Ok(t) => {
             t.execute(move ||
             {
-                log::debug!("STDOUT sender thread has been started");
+                log::debug!("SOCKET sender thread has been started");
                 'connect_loop: loop {
                     match TcpStream::connect(gateway.tcp_connect.clone()) {
                         Ok(mut stream) => {
@@ -28,7 +28,7 @@ pub fn sender(_c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                 if ! stdlib::channel::pipe_is_empty_raw("out".to_string()) {
                                     match stdlib::channel::pipe_pull("out".to_string()) {
                                         Ok(res) => {
-                                            log::debug!("Received {} bytes by STDOUT processor", &res.len());
+                                            log::debug!("Received {} bytes by SOCKET processor", &res.len());
                                             let zstream = Deserializer::from_str(&res).into_iter::<Value>();
                                             for value in zstream {
                                                 match value {
