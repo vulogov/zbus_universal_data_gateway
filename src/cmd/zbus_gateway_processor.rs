@@ -6,6 +6,7 @@ use std::sync::Mutex;
 use std::time::Duration;
 use lazy_static::lazy_static;
 use timedmap::TimedMap;
+use etime::Etime;
 use serde_json::{json, from_str, Deserializer, Value};
 
 lazy_static! {
@@ -170,6 +171,8 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                         match stdlib::channel::pipe_pull("in".to_string()) {
                             Ok(res) => {
                                 log::debug!("Received {} bytes by processor", &res.len());
+                                let mut e = Etime::new();
+                                e.tic();
                                 let stream = Deserializer::from_str(&res).into_iter::<Value>();
                                 for value in stream {
                                     match value {
@@ -236,6 +239,7 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                         }
                                     }
                                 }
+                                log::debug!("Elapsed time for processing: {} seconds", e.toc().as_secs_f32());
                             }
                             Err(err) => log::error!("Error getting data from channel: {:?}", err),
                         }
