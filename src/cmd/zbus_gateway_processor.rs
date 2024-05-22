@@ -6,7 +6,7 @@ use std::sync::Mutex;
 use std::time::Duration;
 use lazy_static::lazy_static;
 use timedmap::TimedMap;
-use serde_json::{json, Deserializer, Value};
+use serde_json::{json, from_str, Deserializer, Value};
 
 lazy_static! {
     static ref ITEMS: Mutex<TimedMap<String, String>> = {
@@ -27,25 +27,38 @@ fn zabbix_json_get(data: &Value, key: String) -> Value {
 }
 
 fn zabbix_json_get_raw(data: &Value, key: String) -> Option<Value> {
-    match data.get(key) {
-        Some(value) => {
-            return Some(value.clone());
-        }
+    let m = match data.as_object() {
+        Some(m) => m,
         None => {
+            log::error!("Failure to convert to MAP: {} for {}", &data, &key);
             return None;
         }
+    };
+    if m.contains_key(&key) {
+        return Some(data.get(key.clone()).unwrap().clone());
     }
+    None
 }
 
 fn zabbix_json_get_subkey(data: &Value, key: String, subkey: String) -> Value {
-    match data.get(key) {
-        Some(value) => {
-            return zabbix_json_get(value, subkey);
-        }
+    let m = match data.as_object() {
+        Some(m) => m,
         None => {
+            log::error!("Failure to convert to MAP: {}", &data);
             return json!(null);
         }
+    };
+    if m.contains_key(&key) {
+        match data.get(key) {
+            Some(value) => {
+                return zabbix_json_get(value, subkey);
+            }
+            None => {
+                return json!(null);
+            }
+        }
     }
+    json!(null)
 }
 
 fn zabbix_get_item_info(c: &cmd::Cli, gateway: &cmd::Gateway, itemid: String) -> Option<Value> {
@@ -54,7 +67,7 @@ fn zabbix_get_item_info(c: &cmd::Cli, gateway: &cmd::Gateway, itemid: String) ->
         Some(val) => {
             drop(i);
             log::debug!("Getting item {} from cache", &itemid);
-            return Some(json!(val));
+            return Some(from_str(&val).unwrap());
         }
         None => {
             match zabbix_get_item_info_zabbix(c, gateway, itemid.clone()) {
@@ -161,6 +174,12 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                 for value in stream {
                                     match value {
                                         Ok(zjson) => {
+                                            if ! zjson.is_object() {
+                                                log::error!("Received JSON is not an object: {}", &zjson);
+                                                continue;
+                                            }
+                                            let zjson_map = zjson.as_object().unwrap();
+                                            println!("MAP: {:?}", &zjson_map);
                                             let itemkey = match zabbix_json_get_raw(&zjson, "itemid".to_string()) {
                                                 Some(jitemid) => match zabbix_get_item_key(&c, &gateway, jitemid.to_string()) {
                                                     Some(zkey) => zkey,
