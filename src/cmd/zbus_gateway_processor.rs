@@ -2,7 +2,18 @@ extern crate log;
 use crate::cmd;
 use crate::stdlib;
 use nanoid::nanoid;
+use std::sync::Mutex;
+use std::time::Duration;
+use lazy_static::lazy_static;
+use timedmap::TimedMap;
 use serde_json::{json, Deserializer, Value};
+
+lazy_static! {
+    static ref ITEMS: Mutex<TimedMap<String, String>> = {
+        let e: Mutex<TimedMap<String, String>>  = Mutex::new(TimedMap::new());
+        e
+    };
+}
 
 fn zabbix_json_get(data: &Value, key: String) -> Value {
     match data.get(key) {
@@ -38,6 +49,31 @@ fn zabbix_json_get_subkey(data: &Value, key: String, subkey: String) -> Value {
 }
 
 fn zabbix_get_item_info(c: &cmd::Cli, gateway: &cmd::Gateway, itemid: String) -> Option<Value> {
+    let i = ITEMS.lock().unwrap();
+    match i.get(&itemid) {
+        Some(val) => {
+            drop(i);
+            log::debug!("Getting item {} from cache", &itemid);
+            return Some(json!(val));
+        }
+        None => {
+            match zabbix_get_item_info_zabbix(c, gateway, itemid.clone()) {
+                Some(val) => {
+                    i.insert(itemid.clone(), val.to_string(), Duration::from_secs(c.item_cache_timeout.into()));
+                    drop(i);
+                    log::debug!("Storing item {} to cache", &itemid);
+                    return Some(val);
+                }
+                None => {
+                    return None;
+                }
+            }
+        }
+    }
+
+}
+
+fn zabbix_get_item_info_zabbix(c: &cmd::Cli, gateway: &cmd::Gateway, itemid: String) -> Option<Value> {
     match reqwest::blocking::Client::new()
                 .post(format!("{}/api_jsonrpc.php", c.zabbix_api))
                 .bearer_auth(&gateway.zabbix_token)
@@ -64,7 +100,7 @@ fn zabbix_get_item_info(c: &cmd::Cli, gateway: &cmd::Gateway, itemid: String) ->
                     match result.as_array() {
                         Some(item_values) => {
                             if item_values.len() == 0 {
-                                log::error!("Zabbix item.get returned empty array");
+                                log::error!("Zabbix item.get returned empty array for {}", &itemid);
                                 return None;
                             } else {
                                 return Some(result[0].clone());
@@ -96,7 +132,7 @@ fn zabbix_get_item_key(c: &cmd::Cli, gateway: &cmd::Gateway, itemid: String) -> 
                     return Some(itemkey.to_string());
                 }
                 None => {
-                    log::error!("Zabbix item.get returned struct that do not have key_");
+                    log::error!("Zabbix item.get returned struct that do not have key_: {}", &result);
                     return None;
                 }
             }

@@ -3,7 +3,7 @@ use crate::cmd;
 use crate::stdlib;
 use serde_json::{Deserializer, Value};
 
-pub fn sender(c: &cmd::Cli, gateway: &cmd::Gateway)  {
+pub fn sender(_c: &cmd::Cli, gateway: &cmd::Gateway)  {
     log::trace!("zbus_gateway_stdout_sender::run() reached");
     let gateway = gateway.clone();
     if gateway.pretty {

@@ -11,6 +11,8 @@ pub fn run(c: &cmd::Cli, gateway: &cmd::Gateway)  {
     cmd::zbus_gateway_processor::processor(c, gateway);
     if gateway.group.stdout {
         cmd::zbus_gateway_stdout_sender::sender(c, gateway);
+    } else if gateway.group.socket {
+        cmd::zbus_gateway_tcpsocket_sender::sender(c, gateway);
     } else {
         log::error!("Sender is not specified");
         return;
@@ -23,9 +25,9 @@ pub fn run(c: &cmd::Cli, gateway: &cmd::Gateway)  {
             for i in 0..gateway.threads {
                 log::debug!("Starting zabbix catching thread #{}", i);
                 let server = server.clone();
-                let gateway = gateway.clone();
-                let c = c.clone();
-                let i = i.clone();
+                // let gateway = gateway.clone();
+                // let c = c.clone();
+                // let i = i.clone();
                 let guard = thread::spawn(move || {
                     loop {
                         match server.recv() {

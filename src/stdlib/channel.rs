@@ -2,7 +2,6 @@ extern crate log;
 use easy_error::{bail, Error};
 use lazy_static::lazy_static;
 use std::sync::Mutex;
-use serde_json::{to_string, from_str};
 use std::collections::btree_map::BTreeMap;
 use crossbeam::channel::{Sender, Receiver, unbounded};
 

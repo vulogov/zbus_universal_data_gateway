@@ -3,7 +3,6 @@ extern crate log;
 use crate::stdlib::hostname;
 
 use clap::{Args,Parser, Subcommand};
-use std::str::FromStr;
 use std::env;
 use std::fmt::Debug;
 use crate::stdlib;
@@ -14,6 +13,7 @@ pub mod zbus_convertkey;
 pub mod zbus_gateway;
 pub mod zbus_gateway_processor;
 pub mod zbus_gateway_stdout_sender;
+pub mod zbus_gateway_tcpsocket_sender;
 pub mod zbus_version;
 pub mod zbus_login;
 
@@ -71,11 +71,11 @@ pub struct Cli {
     #[clap(help="Zabbix API endpoint", long, default_value_t = String::from("http://127.0.0.1:8080"))]
     pub zabbix_api: String,
 
-    #[clap(help="Listen address for the stream catcher", long, default_value_t = String::from("0.0.0.0:10055"))]
-    pub listen: String,
-
     #[clap(long, default_value_t = 16, help="Number of threads in ThreadManager")]
     pub threads: u16,
+
+    #[clap(long, default_value_t = 3600, help="Timeout for Zabbix ITEMS cache")]
+    pub item_cache_timeout: u16,
 
     #[clap(subcommand)]
     command: Commands,
@@ -119,6 +119,12 @@ pub struct Gateway {
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Display a pretty JSON")]
     pub pretty: bool,
+
+    #[clap(help="Destination address for raw TCP sender", long, default_value_t = String::from("127.0.0.1:55554"))]
+    pub tcp_connect: String,
+
+    #[clap(long, default_value_t = 5, help="TCP timeout for raw TCP sender")]
+    pub tcp_timeout: u16,
 
     #[clap(flatten)]
     group: GatewayArgGroup,
