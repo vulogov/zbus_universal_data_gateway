@@ -45,3 +45,18 @@ To accept the telemetry, you can run the following command
 ```
 nc -k -l 55554
 ```
+### Output processor ZBUS
+
+Collected telemetry is shipped to the ZBUS telemetry bus, stored for storage, and delivered to all Zabbix federated observability members. Delivery could be performed in aggregated or per Zabbix key mode. If aggregated delivery is specified, all telemetry will be delivered to a single key on the bus; otherwise, the gateway will extract a destination key from the telemetry message.
+
+Delivery with telemetry aggregation
+
+```
+zbusdg -dd --zabbix-api http://192.168.86.29/zabbix gateway --zbus --zabbix-token zabbixapitoken --zbus-aggregate --zbus-aggregate-key mykey
+```
+
+Delivery without aggregation,to an individual item keys
+
+```
+zbusdg -dd --zabbix-api http://192.168.86.29/zabbix gateway --zbus --zabbix-token zabbixapitoken 
+```

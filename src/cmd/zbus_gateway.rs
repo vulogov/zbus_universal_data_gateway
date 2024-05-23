@@ -13,6 +13,8 @@ pub fn run(c: &cmd::Cli, gateway: &cmd::Gateway)  {
         cmd::zbus_gateway_stdout_sender::sender(c, gateway);
     } else if gateway.group.socket {
         cmd::zbus_gateway_tcpsocket_sender::sender(c, gateway);
+    } else if gateway.group.zbus {
+        cmd::zbus_gateway_zbus_sender::sender(c, gateway);
     } else if gateway.group.none {
         log::info!("Sender is set to NONE");
     } else {

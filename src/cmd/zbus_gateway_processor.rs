@@ -62,6 +62,39 @@ fn zabbix_json_get_subkey(data: &Value, key: String, subkey: String) -> Value {
     json!(null)
 }
 
+fn zabbix_json_get_subkey_raw(data: &Value, key: String, subkey: String) -> Option<Value> {
+    let m = match data.as_object() {
+        Some(m) => Some(m),
+        None => {
+            log::error!("Failure to convert to MAP: {}", &data);
+            return None;
+        }
+    };
+    if m?.contains_key(&key) {
+        match data.get(key) {
+            Some(value) => {
+                return zabbix_json_get_raw(value, subkey);
+            }
+            None => {
+                return None;
+            }
+        }
+    }
+    return None
+}
+
+pub fn zabbix_json_get_sub_subkey_raw(data: &Value, key: String, subkey: String, subsubkey: String) -> Option<Value> {
+    let m = match zabbix_json_get_subkey_raw(data, key, subkey) {
+        Some(m) => m,
+        None => return None,
+    };
+    match zabbix_json_get_raw(&m, subsubkey) {
+        Some(v) => { return Some(v); }
+        None => {}
+    }
+    return None
+}
+
 fn zabbix_get_item_info(c: &cmd::Cli, gateway: &cmd::Gateway, itemid: String) -> Option<Value> {
     let i = ITEMS.lock().unwrap();
     match i.get(&itemid) {

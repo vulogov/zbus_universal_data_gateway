@@ -13,6 +13,7 @@ pub mod zbus_convertkey;
 pub mod zbus_gateway;
 pub mod zbus_gateway_processor;
 pub mod zbus_gateway_stdout_sender;
+pub mod zbus_gateway_zbus_sender;
 pub mod zbus_gateway_tcpsocket_sender;
 pub mod zbus_version;
 pub mod zbus_login;
@@ -123,6 +124,24 @@ pub struct Gateway {
     #[clap(help="Destination address for raw TCP sender", long, default_value_t = String::from("127.0.0.1:55554"))]
     pub tcp_connect: String,
 
+    #[clap(help="ZBUS address", long, default_value_t = String::from(env::var("ZBUS_ADDRESS").unwrap_or("tcp/127.0.0.1:7447".to_string())))]
+    pub zbus_connect: String,
+
+    #[clap(help="ZBUS listen address", long, default_value_t = String::from_utf8(vec![]).unwrap())]
+    pub zbus_listen: String,
+
+    #[clap(help="ZBUS aggregate key", long, default_value_t = String::from("aggregation"))]
+    pub zbus_aggregate_key: String,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Disable multicast discovery of ZENOH bus")]
+    pub zbus_disable_multicast_scout: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Aggregate all keys to a single topic")]
+    pub zbus_aggregate: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Configure CONNECT mode for ZENOH bus")]
+    pub zbus_set_connect_mode: bool,
+
     #[clap(long, default_value_t = 5, help="TCP timeout for raw TCP sender")]
     pub tcp_timeout: u16,
 
@@ -138,6 +157,9 @@ pub struct GatewayArgGroup {
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to RAW socket")]
     pub socket: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to ZBUS")]
+    pub zbus: bool,
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to NONE")]
     pub none: bool,
