@@ -50,10 +50,10 @@ pub fn init() {
 }
 
 #[derive(Parser, Clone)]
-#[clap(name = "zbus")]
+#[clap(name = "zbusudg")]
 #[clap(author = "Vladimir Ulogov <vladimir@ulogov.us>")]
 #[clap(version = env!("CARGO_PKG_VERSION"))]
-#[clap(about = "ZBUS telemetry CLI tool", long_about = None)]
+#[clap(about = "ZBUS Universal Data Gateway", long_about = None)]
 pub struct Cli {
     #[clap(short, long, action = clap::ArgAction::Count, help="Increase verbosity")]
     pub debug: u8,
