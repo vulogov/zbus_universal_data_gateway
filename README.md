@@ -52,11 +52,19 @@ Collected telemetry is shipped to the ZBUS telemetry bus, stored for storage, an
 Delivery with telemetry aggregation
 
 ```
-zbusdg -dd --zabbix-api http://192.168.86.29/zabbix gateway --zbus --zabbix-token zabbixapitoken --zbus-aggregate --zbus-aggregate-key mykey
+zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --zbus --zabbix-token zabbixapitoken --zbus-aggregate --zbus-aggregate-key mykey
 ```
 
 Delivery without aggregation,to an individual item keys
 
 ```
-zbusdg -dd --zabbix-api http://192.168.86.29/zabbix gateway --zbus --zabbix-token zabbixapitoken 
+zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --zbus --zabbix-token zabbixapitoken
+```
+
+## Monitor ZBUS submission
+
+In order to verify and debug your gateway, you can run zbusudg in the "monitor mode", where you subscribing to the key on ZBUS and dump on STDOUT all data packets received on that key.
+
+```
+zbusudg monitor
 ```
