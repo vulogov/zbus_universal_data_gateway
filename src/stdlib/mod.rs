@@ -5,6 +5,7 @@ pub mod hostname;
 pub mod channel;
 pub mod sleep;
 pub mod threads;
+pub mod time;
 
 use crate::cmd::{Cli};
 

@@ -19,6 +19,7 @@ pub mod zbus_gateway_nats_sender;
 pub mod zbus_gateway_tcpsocket_sender;
 pub mod zbus_version;
 pub mod zbus_login;
+pub mod zbus_json;
 
 pub fn init() {
     log::debug!("Parsing CLI parameters");
