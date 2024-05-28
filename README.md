@@ -61,6 +61,22 @@ Delivery without aggregation,to an individual item keys
 zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --zbus --zabbix-token zabbixapitoken
 ```
 
+### Output processor NATS
+
+Collected telemetry is shipped to the NATS.io server, stored for storage, and could be accessed by any NATS.io client. Delivery could be performed in aggregated or per Zabbix key mode. If aggregated delivery is specified, all telemetry will be delivered to a single key on the bus; otherwise, the gateway will extract a destination key from the telemetry message.
+
+Delivery with telemetry aggregation
+
+```
+zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --nats --zabbix-token zabbixapitoken --nats-aggregate --nats-aggregate-key mykey
+```
+
+Delivery without aggregation,to an individual item keys
+
+```
+zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --nats --zabbix-token zabbixapitoken
+```
+
 ## Monitor ZBUS submission
 
 In order to verify and debug your gateway, you can run zbusudg in the "monitor mode", where you subscribing to the key on ZBUS and dump on STDOUT all data packets received on that key.
