@@ -145,6 +145,9 @@ pub struct Gateway {
     #[clap(long, default_value_t = 1, help="Number of catcher threads")]
     pub threads: u16,
 
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Monitor elapsed time for JSON batch processing")]
+    pub telemetry_monitor_elapsed: bool,
+
     #[clap(long, action = clap::ArgAction::SetTrue, help="Display a pretty JSON")]
     pub pretty: bool,
 
