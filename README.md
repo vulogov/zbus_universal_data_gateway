@@ -77,6 +77,18 @@ Delivery without aggregation,to an individual item keys
 zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --nats --zabbix-token zabbixapitoken
 ```
 
+### Send UDG telemetry to ZBUS
+
+ZBUS UDG can send some internal telemetry alongside with telemetry received from Zabbix server.
+
+#### Monitor elapsed time spent in processing JSON telemetry batches
+
+You can monitor elapsed time for JSON batch processing by passing --telemetry-monitor-elapsed to the gateway command line target. Trelemetry will be submitted to the key /zbus/udg/elapsed
+
+```
+zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --nats --zabbix-token zabbixapitoken --telemetry-monitor-elapsed
+```
+
 ## Monitor ZBUS submission
 
 In order to verify and debug your gateway, you can run zbusudg in the "monitor mode", where you subscribing to the key on ZBUS and dump on STDOUT all data packets received on that key.
