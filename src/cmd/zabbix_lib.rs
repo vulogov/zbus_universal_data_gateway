@@ -15,7 +15,14 @@ enum ZabbixKeyToken {
 pub fn zabbix_key_to_zenoh(key: String) -> Option<String> {
     log::trace!("Parsing: {:?}", &key);
     let mut res = String::from("".to_string());
-    let mut lex = ZabbixKeyToken::lexer(&key);
+    let mut wkey = key.clone();
+    if key.chars().nth(0) == Some('\"') {
+        wkey = match enquote::unquote(&key) {
+            Ok(val) => val,
+            Err(_) => return None,
+        };
+    }
+    let mut lex = ZabbixKeyToken::lexer(&wkey);
     loop {
         match lex.next() {
             Some(Ok(ZabbixKeyToken::Ident)) => {
