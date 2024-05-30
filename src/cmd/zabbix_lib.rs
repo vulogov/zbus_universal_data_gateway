@@ -27,7 +27,10 @@ pub fn zabbix_key_to_zenoh(key: String) -> Option<String> {
                     val = val.replace("/", "\\");
                 }
                 if val.chars().nth(0) == Some('\"') {
-                    val = (&val[1..val.len() - 1]).to_string();
+                    val = match enquote::unquote(&val) {
+                        Ok(val) => val,
+                        Err(_) => continue,
+                    };
                 }
                 res = [res, "/".to_string(), val].join("");
             }
