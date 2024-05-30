@@ -63,7 +63,7 @@ zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --zbus --zabbix-token z
 
 ### Output processor NATS
 
-Collected telemetry is shipped to the NATS.io server, stored for storage, and could be accessed by any NATS.io client. Delivery could be performed in aggregated or per Zabbix key mode. If aggregated delivery is specified, all telemetry will be delivered to a single key on the bus; otherwise, the gateway will extract a destination key from the telemetry message.
+Collected telemetry is shipped to the NATS.io server, and could be accessed by any NATS.io client. Delivery could be performed in aggregated or per Zabbix key mode. If aggregated delivery is specified, all telemetry will be delivered to a single key on the bus; otherwise, the gateway will extract a destination key from the telemetry message.
 
 Delivery with telemetry aggregation
 
@@ -75,6 +75,29 @@ Delivery without aggregation,to an individual item keys
 
 ```
 zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --nats --zabbix-token zabbixapitoken
+```
+
+### Output processor MQTT
+
+Collected telemetry is shipped to the MQTT server, and could be accessed by any MQTT client. Delivery could be performed in aggregated only mode.
+
+Delivery with telemetry aggregation
+
+```
+zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --mqtt --zabbix-token zabbixapitoken --mqtt-aggregate-key mykey
+```
+
+
+### Send UDG telemetry to ZBUS
+
+ZBUS UDG can send some internal telemetry alongside with telemetry received from Zabbix server.
+
+#### Monitor elapsed time spent in processing JSON telemetry batches
+
+You can monitor elapsed time for JSON batch processing by passing --telemetry-monitor-elapsed to the gateway command line target. Trelemetry will be submitted to the key /zbus/udg/elapsed
+
+```
+zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --nats --zabbix-token zabbixapitoken --telemetry-monitor-elapsed
 ```
 
 ## Monitor ZBUS submission

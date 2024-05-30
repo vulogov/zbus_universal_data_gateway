@@ -1,6 +1,6 @@
 [package]
 name = "zbusdg"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 description = "Universal Data Gateway for ZBUS project"
 license-file = "LICENSE"
@@ -30,3 +30,4 @@ timedmap = "1.0.2"
 etime = "0.1.8"
 zenoh = "0.10.1-rc"
 nats = "0.25.0"
+mqtt-protocol = "0.12.0"
