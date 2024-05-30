@@ -15,9 +15,12 @@ pub mod zbus_monitor;
 pub mod zbus_gateway_processor;
 pub mod zbus_gateway_stdout_sender;
 pub mod zbus_gateway_zbus_sender;
+pub mod zbus_gateway_nats_sender;
+pub mod zbus_gateway_mqtt_sender;
 pub mod zbus_gateway_tcpsocket_sender;
 pub mod zbus_version;
 pub mod zbus_login;
+pub mod zbus_json;
 
 pub fn init() {
     log::debug!("Parsing CLI parameters");
@@ -143,6 +146,9 @@ pub struct Gateway {
     #[clap(long, default_value_t = 1, help="Number of catcher threads")]
     pub threads: u16,
 
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Monitor elapsed time for JSON batch processing")]
+    pub telemetry_monitor_elapsed: bool,
+
     #[clap(long, action = clap::ArgAction::SetTrue, help="Display a pretty JSON")]
     pub pretty: bool,
 
@@ -152,17 +158,32 @@ pub struct Gateway {
     #[clap(help="ZBUS address", long, default_value_t = String::from(env::var("ZBUS_ADDRESS").unwrap_or("tcp/127.0.0.1:7447".to_string())))]
     pub zbus_connect: String,
 
+    #[clap(help="NATS address", long, default_value_t = String::from(env::var("NATS_ADDRESS").unwrap_or("127.0.0.1:4222".to_string())))]
+    pub nats_connect: String,
+
+    #[clap(help="MQTT address", long, default_value_t = String::from(env::var("MQTT_ADDRESS").unwrap_or("127.0.0.1:1883".to_string())))]
+    pub mqtt_connect: String,
+
     #[clap(help="ZBUS listen address", long, default_value_t = String::from_utf8(vec![]).unwrap())]
     pub zbus_listen: String,
 
     #[clap(help="ZBUS aggregate key", long, default_value_t = String::from("aggregation"))]
     pub zbus_aggregate_key: String,
 
+    #[clap(help="NATS aggregate key", long, default_value_t = String::from("aggregation"))]
+    pub nats_aggregate_key: String,
+
+    #[clap(help="MQTT aggregate key", long, default_value_t = String::from("aggregation"))]
+    pub mqtt_aggregate_key: String,
+
     #[clap(long, action = clap::ArgAction::SetTrue, help="Disable multicast discovery of ZENOH bus")]
     pub zbus_disable_multicast_scout: bool,
 
-    #[clap(long, action = clap::ArgAction::SetTrue, help="Aggregate all keys to a single topic")]
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Aggregate all keys to a single ZBUS topic")]
     pub zbus_aggregate: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Aggregate all keys to a single NATS subject")]
+    pub nats_aggregate: bool,
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Configure CONNECT mode for ZENOH bus")]
     pub zbus_set_connect_mode: bool,
@@ -185,6 +206,12 @@ pub struct GatewayArgGroup {
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to ZBUS")]
     pub zbus: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to NATS")]
+    pub nats: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to MQTT")]
+    pub mqtt: bool,
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to NONE")]
     pub none: bool,

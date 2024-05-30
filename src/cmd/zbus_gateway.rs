@@ -15,6 +15,10 @@ pub fn run(c: &cmd::Cli, gateway: &cmd::Gateway)  {
         cmd::zbus_gateway_tcpsocket_sender::sender(c, gateway);
     } else if gateway.group.zbus {
         cmd::zbus_gateway_zbus_sender::sender(c, gateway);
+    } else if gateway.group.nats {
+        cmd::zbus_gateway_nats_sender::sender(c, gateway);
+    } else if gateway.group.mqtt {
+        cmd::zbus_gateway_mqtt_sender::sender(c, gateway);
     } else if gateway.group.none {
         log::info!("Sender is set to NONE");
     } else {

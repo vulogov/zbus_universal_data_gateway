@@ -265,6 +265,7 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                             if ! gateway.group.none {
                                                 stdlib::channel::pipe_push("out".to_string(), data.to_string());
                                             }
+                                            // stdlib::channel::pipe_push("out".to_string(), data.to_string());
                                             // stdlib::channel::pipe_push("out".to_string(), zjson.to_string());
                                         }
                                         Err(err) => {
@@ -272,7 +273,14 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                         }
                                     }
                                 }
-                                log::debug!("Elapsed time for processing: {} seconds", e.toc().as_secs_f32());
+                                let elapsed = e.toc().as_secs_f32();
+                                log::debug!("Elapsed time for processing: {} seconds", elapsed);
+                                if gateway.telemetry_monitor_elapsed {
+                                    let data = cmd::zbus_json::generate_json_telemetry(&c, "/zbus/udg/elapsed".to_string(), "Elapsed time for JSON batch processing".to_string(), 3, json!(elapsed));
+                                    if ! gateway.group.none {
+                                        stdlib::channel::pipe_push("out".to_string(), data.to_string());
+                                    }
+                                }
                             }
                             Err(err) => log::error!("Error getting data from channel: {:?}", err),
                         }
