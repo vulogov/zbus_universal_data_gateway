@@ -176,7 +176,15 @@ fn zabbix_get_item_key(c: &cmd::Cli, gateway: &cmd::Gateway, itemid: String) -> 
         Some(result) => {
             match zabbix_json_get_raw(&result, "key_".to_string()) {
                 Some(itemkey) => {
-                    return Some(itemkey.to_string());
+                    let itemkey = itemkey.to_string();
+                    if itemkey.chars().nth(0) == Some('\"') {
+                        let val = match enquote::unquote(&itemkey) {
+                            Ok(val) => val,
+                            Err(_) => return None,
+                        };
+                        return Some(val);
+                    }
+                    return Some(itemkey);
                 }
                 None => {
                     log::error!("Zabbix item.get returned struct that do not have key_: {}", &result);
