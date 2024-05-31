@@ -3,6 +3,7 @@ use crate::cmd;
 use crate::stdlib;
 use serde_json::{Deserializer, Value};
 use telegraf::*;
+use telegraf::protocol::{Field, FieldData};
 
 pub fn sender(c: &cmd::Cli, gateway: &cmd::Gateway)  {
     log::trace!("zbus_gateway_statsd_sender::run() reached");
@@ -43,6 +44,10 @@ pub fn sender(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                             Some(d) => d,
                                                             None => continue,
                                                         };
+                                                        let itemtype = match cmd::zbus_gateway_processor::zabbix_json_get_raw(&d, "contentType".to_string()) {
+                                                            Some(d) => d.as_i64(),
+                                                            None => continue,
+                                                        };
                                                         // println!("BODY: {:?}", cmd::zbus_gateway_processor::zabbix_json_get_sub_subkey_raw(&zjson, "body".to_string(), "details".to_string(), "properties".to_string()));
                                                         let clock = match cmd::zbus_gateway_processor::zabbix_json_get_raw(&properties, "zabbix_clock".to_string()) {
                                                             Some(c) => c,
@@ -52,20 +57,66 @@ pub fn sender(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                             Some(c) => c,
                                                             None => continue,
                                                         };
-                                                        if data.is_f64() {
-                                                            let mdata = point!(itemkey.clone(), ("platform", c.platform_name.clone()) ("source", c.source.clone()), ("data", data.as_f64().unwrap()); stdlib::time::make_nanosecond_ts(clock.as_f64().unwrap(), ns.as_f64().unwrap()) as u64);
-                                                            let _ = stream.write_point(&mdata);
-                                                        } else if data.is_i64() {
-                                                            let mdata = point!(itemkey.clone(), ("platform", c.platform_name.clone()) ("source", c.source.clone()), ("data", data.as_i64().unwrap()); stdlib::time::make_nanosecond_ts(clock.as_f64().unwrap(), ns.as_f64().unwrap()) as u64);
-                                                            let _ = stream.write_point(&mdata);
-                                                        } else {
-                                                            log::debug!("Unsupported data type for {} = {:?}", &itemkey, &data);
+                                                        let zabbix_host = match cmd::zbus_gateway_processor::zabbix_json_get_raw(&properties, "zabbix_host_name".to_string()) {
+                                                            Some(c) => c,
+                                                            None => continue,
+                                                        };
+                                                        let mut mdata = Point::new(
+                                                            String::from(itemkey.clone()),
+                                                            vec![
+                                                                (String::from("platform"),      String::from(c.platform_name.clone())),
+                                                                (String::from("source"),        String::from(c.source.clone())),
+                                                                (String::from("zabbix_host"),   String::from(zabbix_host.to_string())),
+                                                            ],
+                                                            vec![
+                                                                (String::from("zabbix_type"), Box::new(itemtype.unwrap())),
+                                                            ],
+                                                            Some(stdlib::time::make_nanosecond_ts(clock.as_f64().unwrap(), ns.as_f64().unwrap()) as u64),
+                                                        );
+                                                        match itemtype.unwrap() {
+                                                            0 => {
+                                                                mdata.fields.push(
+                                                                    Field {
+                                                                        name:   String::from("data"),
+                                                                        value:  FieldData::Float(data.as_f64().unwrap()),
+                                                                    }
+                                                                );
+                                                            }
+                                                            2 => {
+                                                                mdata.fields.push(
+                                                                    Field {
+                                                                        name:   String::from("data"),
+                                                                        value:  FieldData::Str(data.as_str().unwrap().to_string()),
+                                                                    }
+                                                                );
+                                                            }
+                                                            3 => {
+                                                                mdata.fields.push(
+                                                                    Field {
+                                                                        name:   String::from("data"),
+                                                                        value:  FieldData::Number(data.as_i64().unwrap()),
+                                                                    }
+                                                                );
+                                                            }
+                                                            1 | 4 => {
+                                                                mdata.fields.push(
+                                                                    Field {
+                                                                        name:   String::from("data"),
+                                                                        value:  FieldData::Str(escape_string::escape(data.as_str().unwrap()).to_string()),
+                                                                    }
+                                                                );
+                                                            }
+                                                            _ => {
+                                                                log::debug!("Unsupported data type for {} = {:?}", &itemkey, &data);
+                                                            }
                                                         }
-                                                        // else if data.is_string() {
-                                                        //     let value = format!("{}", data.as_str().unwrap());
-                                                        //     let mdata = point!(itemkey.clone(), ("platform", c.platform_name.clone()) ("source", c.source.clone()), ("data", value); stdlib::time::make_nanosecond_ts(clock.as_f64().unwrap(), ns.as_f64().unwrap()) as u64);
-                                                        //     let _ = stream.write_point(&mdata);
-                                                        // }
+                                                        match stream.write_point(&mdata) {
+                                                            Ok(_) => {}
+                                                            Err(err) => {
+                                                                log::error!("Error submitting metrics to TELEGRAF: {}", err);
+                                                                continue 'outside;
+                                                            }
+                                                        }
                                                     }
                                                     Err(err) => {
                                                         log::error!("Error converting JSON: {:?}", err);
@@ -84,7 +135,8 @@ pub fn sender(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                         }
                         Err(err) => {
                             log::error!("Error connecting to TELEGRAF: {}", err);
-                            break 'outside;
+                            stdlib::sleep::sleep(1);
+                            continue 'outside;
                         }
                     }
                 }
