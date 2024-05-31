@@ -27,7 +27,7 @@ fn zabbix_json_get(data: &Value, key: String) -> Value {
     }
 }
 
-fn zabbix_json_get_raw(data: &Value, key: String) -> Option<Value> {
+pub fn zabbix_json_get_raw(data: &Value, key: String) -> Option<Value> {
     let m = match data.as_object() {
         Some(m) => m,
         None => {

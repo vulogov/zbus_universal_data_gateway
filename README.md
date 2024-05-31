@@ -87,6 +87,15 @@ Delivery with telemetry aggregation
 zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --mqtt --zabbix-token zabbixapitoken --mqtt-aggregate-key mykey
 ```
 
+### Output processor STATSD
+
+Collected telemetry is shipped to the STATSD server, and could be accessed by any component of STATSD ensemble.
+
+Delivery with telemetry aggregation
+
+```
+zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --statsd --zabbix-token zabbixapitoken 
+```
 
 ### Send UDG telemetry to ZBUS
 
