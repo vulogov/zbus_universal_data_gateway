@@ -21,6 +21,8 @@ pub fn run(c: &cmd::Cli, gateway: &cmd::Gateway)  {
         cmd::zbus_gateway_mqtt_sender::sender(c, gateway);
     } else if gateway.group.statsd {
         cmd::zbus_gateway_statsd_sender::sender(c, gateway);
+    } else if gateway.group.telegraf {
+        cmd::zbus_gateway_telegraf_sender::sender(c, gateway);
     } else if gateway.group.none {
         log::info!("Sender is set to NONE");
     } else {

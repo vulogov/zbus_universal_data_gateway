@@ -18,6 +18,7 @@ pub mod zbus_gateway_zbus_sender;
 pub mod zbus_gateway_nats_sender;
 pub mod zbus_gateway_mqtt_sender;
 pub mod zbus_gateway_statsd_sender;
+pub mod zbus_gateway_telegraf_sender;
 pub mod zbus_gateway_tcpsocket_sender;
 pub mod zbus_version;
 pub mod zbus_login;
@@ -180,6 +181,9 @@ pub struct Gateway {
     #[clap(help="STATSD address", long, default_value_t = String::from("127.0.0.1:8125"))]
     pub statsd_connect: String,
 
+    #[clap(help="TELEGRAF address", long, default_value_t = String::from("tcp://localhost:8094"))]
+    pub telegraf_connect: String,
+
     #[clap(long, action = clap::ArgAction::SetTrue, help="Disable multicast discovery of ZENOH bus")]
     pub zbus_disable_multicast_scout: bool,
 
@@ -219,6 +223,9 @@ pub struct GatewayArgGroup {
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to STATSD")]
     pub statsd: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to TELEGRAF")]
+    pub telegraf: bool,
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to NONE")]
     pub none: bool,
