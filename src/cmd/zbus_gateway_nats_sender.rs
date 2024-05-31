@@ -72,7 +72,7 @@ pub fn sender(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                         }
                     }
                     Err(err) => {
-                        log::error!("Error connecting to the bus: {:?}", err);
+                        log::error!("Error connecting to NATS: {:?}", err);
                         return;
                     }
                 }

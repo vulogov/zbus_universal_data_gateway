@@ -41,7 +41,7 @@ pub fn zabbix_json_get_raw(data: &Value, key: String) -> Option<Value> {
     None
 }
 
-fn zabbix_json_get_subkey(data: &Value, key: String, subkey: String) -> Value {
+pub fn zabbix_json_get_subkey(data: &Value, key: String, subkey: String) -> Value {
     let m = match data.as_object() {
         Some(m) => m,
         None => {
@@ -62,7 +62,7 @@ fn zabbix_json_get_subkey(data: &Value, key: String, subkey: String) -> Value {
     json!(null)
 }
 
-fn zabbix_json_get_subkey_raw(data: &Value, key: String, subkey: String) -> Option<Value> {
+pub fn zabbix_json_get_subkey_raw(data: &Value, key: String, subkey: String) -> Option<Value> {
     let m = match data.as_object() {
         Some(m) => Some(m),
         None => {
