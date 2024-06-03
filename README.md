@@ -103,6 +103,15 @@ Collected telemetry is shipped to the Telegraf server, and could be integrated w
 zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --telegraf --zabbix-token zabbixapitoken
 ```
 
+### Output processor CLICKHOUSE
+
+Collected telemetry is shipped to the Clickhouse OLAP columnar storage, and could be used by any tools that supported clickhouse.
+
+```
+zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --clickhouse --zabbix-token zabbixapitoken
+```
+
+
 ### Send UDG telemetry to ZBUS
 
 ZBUS UDG can send some internal telemetry alongside with telemetry received from Zabbix server.

@@ -6,7 +6,7 @@ use telegraf::*;
 use telegraf::protocol::{Field, FieldData};
 
 pub fn sender(c: &cmd::Cli, gateway: &cmd::Gateway)  {
-    log::trace!("zbus_gateway_statsd_sender::run() reached");
+    log::trace!("zbus_gateway_telegraf_sender::run() reached");
     let gateway = gateway.clone();
     let c       = c.clone();
 
