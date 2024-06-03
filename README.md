@@ -1,5 +1,7 @@
 # Universal Data Gateway for Zabbix server
 
+(https://github.com/vulogov/zbus_universal_data_gateway/blob/b5b843e8c31731911a2ea10daeee63540cf57915/Documentation/FederatedObservabilitySample.png)
+
 The Universal Data Gateway, or UDG for shorts, is essential in the Federated Zabbix ecosystem. It's a software component designed to extract, analyze, and share telemetry data produced by Zabbix Observability platforms. As a real-time data connector for Zabbix, it accepts telemetry data from the Zabbix server, converts it to extended JSON format, and then passes it to one of the output processors.
 
 ## Telemetry connector
