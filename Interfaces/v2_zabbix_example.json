@@ -1,0 +1,32 @@
+{
+  "body": {
+    "details": {
+      "destination": "/system.cpu.util/steal",
+      "details": {
+        "contentType": 0,
+        "data": 0,
+        "detailType": ""
+      },
+      "origin": "Zabbix server",
+      "properties": {
+        "name": "Linux: CPU steal time",
+        "tags": null,
+        "zabbix_clock": 1717181406,
+        "zabbix_host_name": "Zabbix server",
+        "zabbix_item": "system.cpu.util[,steal]",
+        "zabbix_itemid": 42246,
+        "zabbix_ns": 423164304
+      }
+    }
+  },
+  "headers": {
+    "compressionAlgorithm": null,
+    "cultureCode": null,
+    "encryptionAlgorithm": null,
+    "messageType": "telemetry",
+    "route": "local",
+    "streamName": "local",
+    "version": "v2"
+  },
+  "id": "HSh9k80QJE32ffTN4u9SZ"
+}

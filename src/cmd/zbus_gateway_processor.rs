@@ -206,7 +206,7 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
         Ok(t) => {
             t.execute(move ||
             {
-                log::debug!("PROCESSOR thread has been started");
+                log::debug!("PROCESSOR ZABBIX thread has been started");
                 loop {
                     if ! stdlib::channel::pipe_is_empty_raw("in".to_string()) {
                         match stdlib::channel::pipe_pull("in".to_string()) {

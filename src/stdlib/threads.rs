@@ -3,6 +3,7 @@ use lazy_static::lazy_static;
 use std::sync::Mutex;
 use thread_manager::ThreadManager;
 use crate::cmd;
+use crate::stdlib;
 
 
 lazy_static! {
@@ -17,6 +18,20 @@ pub fn terminale_all() {
     log::debug!("Terimating managed threads");
     t.terminate_all();
     drop(t);
+}
+
+pub fn wait_all() {
+    loop {
+        let t = THREADS.lock().unwrap();
+        let active_threads = t.active_threads();
+        drop(t);
+        if active_threads == 0 {
+            log::debug!("ThreadManager do not have any active threads");
+            break;
+        }
+        log::debug!("{} active threads in ThreadManager", active_threads);
+        stdlib::sleep::sleep(60);
+    }
 }
 
 pub fn threads_init(c: &cmd::Cli) {

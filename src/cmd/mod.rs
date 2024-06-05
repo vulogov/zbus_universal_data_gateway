@@ -13,6 +13,7 @@ pub mod zbus_convertkey;
 pub mod zbus_gateway;
 pub mod zbus_monitor;
 pub mod zbus_gateway_processor;
+pub mod zbus_gateway_processor_passthrough;
 pub mod zbus_gateway_stdout_sender;
 pub mod zbus_gateway_zbus_sender;
 pub mod zbus_gateway_nats_sender;
@@ -21,6 +22,8 @@ pub mod zbus_gateway_statsd_sender;
 pub mod zbus_gateway_telegraf_sender;
 pub mod zbus_gateway_clickhouse_sender;
 pub mod zbus_gateway_tcpsocket_sender;
+pub mod zbus_gateway_catcher_zabbix;
+pub mod zbus_gateway_catcher_nats;
 pub mod zbus_version;
 pub mod zbus_login;
 pub mod zbus_json;
@@ -176,6 +179,9 @@ pub struct Gateway {
     #[clap(help="NATS aggregate key", long, default_value_t = String::from("aggregation"))]
     pub nats_aggregate_key: String,
 
+    #[clap(help="NATS subscribe key", long, default_value_t = String::from("aggregation"))]
+    pub nats_subscribe_key: String,
+
     #[clap(help="MQTT aggregate key", long, default_value_t = String::from("aggregation"))]
     pub mqtt_aggregate_key: String,
 
@@ -197,6 +203,9 @@ pub struct Gateway {
     #[clap(long, action = clap::ArgAction::SetTrue, help="Aggregate all keys to a single ZBUS topic")]
     pub zbus_aggregate: bool,
 
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Send two copies of the telemetry: one to aggregated topic another to split topic")]
+    pub zbus_aggregate_and_split: bool,
+
     #[clap(long, action = clap::ArgAction::SetTrue, help="Aggregate all keys to a single NATS subject")]
     pub nats_aggregate: bool,
 
@@ -205,6 +214,9 @@ pub struct Gateway {
 
     #[clap(long, default_value_t = 5, help="TCP timeout for raw TCP sender")]
     pub tcp_timeout: u16,
+
+    #[clap(flatten)]
+    catchers: CatcherArgGroup,
 
     #[clap(flatten)]
     group: GatewayArgGroup,
@@ -239,6 +251,17 @@ pub struct GatewayArgGroup {
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to NONE")]
     pub none: bool,
+}
+
+#[derive(Debug, Clone, clap::Args)]
+#[group(required = true, multiple = false)]
+pub struct CatcherArgGroup {
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Catch telemetry from Zabbix")]
+    pub zabbix: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Catch telemetry from NATS")]
+    pub nats_catcher: bool,
+
 }
 
 #[derive(Subcommand, Clone, Debug)]
