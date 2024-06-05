@@ -29,8 +29,8 @@ zbusdg --zabbix-api http://127.0.0.1:8080/zabbix gateway --zabbix --none --zabbi
 When selected with CLI keyword --nats-catcher, ZBUSUDG starts catching thread from NATS.io service by subscribing to the channel specified by --nats-subscribe-key. In this example, the first command is running Zabbix telemetry catcher and passing it to NATS in aggregate mode. The second command receiving telemetry from NATS server and send it to STDOUT output processors
 
 ```bash
-
-zbusdg -dd --zabbix-api http://127.0.0.1/zabbix gateway --nats-catcher  --zabbix-token zabbixtoken --stdout --pretty
+zbusdg  --zabbix-api http://127.0.0.1/zabbix gateway --zabbix --nats --zabbix-token zabbixapitoken --nats-aggregate
+zbusdg --zabbix-api http://127.0.0.1/zabbix gateway --nats-catcher  --zabbix-token zabbixtoken --stdout --pretty
 ```
 
 ## Output processor
@@ -44,7 +44,7 @@ Here is the list of the available output processors for the Universal Data Gatew
 As the name suggests, this is a NOOP telemetry processor. If the gateway executes with this processor, the collected telemetry will be silently discarded.
 
 ```bash
-zbusdg --zabbix-api http://127.0.0.1:8080/zabbix gateway --zabbix --none --zabbix-token zabbixapitoken
+zbusdg --zabbix-api http://127.0.0.1/zabbix gateway --zabbix --none --zabbix-token zabbixapitoken
 ```
 
 ### Output processor STDOUT
@@ -52,7 +52,7 @@ zbusdg --zabbix-api http://127.0.0.1:8080/zabbix gateway --zabbix --none --zabbi
 Collected telemetry received from the "OUT" internal pipeline will be delivered to the standard output. If you specify —-pretty as the UDG CLI option, the processor will prettify the output JSON.
 
 ```bash
-zbusdg --zabbix-api http://127.0.0.1:8080/zabbix gateway --zabbix --stdout --pretty --zabbix-token zabbixapitoken
+zbusdg --zabbix-api http://127.0.0.1/zabbix gateway --zabbix --stdout --pretty --zabbix-token zabbixapitoken
 ```
 
 ### Output processor SOCKET
@@ -60,7 +60,7 @@ zbusdg --zabbix-api http://127.0.0.1:8080/zabbix gateway --zabbix --stdout --pre
 Telemetry in JSON format will be delivered to the raw TCP socket, one telemetry item per line.
 
 ```bash
-zbusdg --zabbix-api http://127.0.0.1:8080/zabbix gateway --zabbix --socket --pretty --zabbix-token zabbixapitoken --tcp-connect 127.0.0.1:55554
+zbusdg --zabbix-api http://127.0.0.1/zabbix gateway --zabbix --socket --pretty --zabbix-token zabbixapitoken --tcp-connect 127.0.0.1:55554
 ```
 
 To accept the telemetry, you can run the following command
@@ -75,14 +75,14 @@ Collected telemetry is shipped to the ZBUS telemetry bus, stored for storage, an
 Delivery with telemetry aggregation
 
 ```
-zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --zabbix  --zbus --zabbix-token zabbixapitoken --zbus-aggregate --zbus-aggregate-key mykey
+zbusdg  --zabbix-api http://127.0.0.1/zabbix gateway --zabbix  --zbus --zabbix-token zabbixapitoken --zbus-aggregate --zbus-aggregate-key mykey
 ```
 
-Delivery without aggregation,to an individual item keys
+Delivery without aggregation, to an individual item keys
 
 ```
-zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --zabbix --nats --zabbix-token zabbixapitoken --nats-aggregate
-zbusdg --zabbix-api http://192.168.86.29/zabbix gateway --zabbix --zbus --zabbix-token zabbixapitoken
+zbusdg  --zabbix-api http://127.0.0.1/zabbix gateway --zabbix --nats --zabbix-token zabbixapitoken --nats-aggregate
+zbusdg --zabbix-api http://127.0.0.1/zabbix gateway --zabbix --zbus --zabbix-token zabbixapitoken
 ```
 
 ### Output processor NATS
@@ -92,13 +92,13 @@ Collected telemetry is shipped to the NATS.io server, and could be accessed by a
 Delivery with telemetry aggregation
 
 ```
-zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --zabbix --nats --zabbix-token zabbixapitoken --nats-aggregate --nats-aggregate-key mykey
+zbusdg  --zabbix-api http://127.0.0.1/zabbix gateway --zabbix --nats --zabbix-token zabbixapitoken --nats-aggregate --nats-aggregate-key mykey
 ```
 
 Delivery without aggregation,to an individual item keys
 
 ```
-zbusdg --zabbix-api http://192.168.86.29/zabbix gateway  --zabbix --nats --zabbix-token zabbixapitoken
+zbusdg --zabbix-api http://127.0.0.1/zabbix gateway  --zabbix --nats --zabbix-token zabbixapitoken
 ```
 
 ### Output processor MQTT
