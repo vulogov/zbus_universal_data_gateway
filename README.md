@@ -12,6 +12,27 @@ First, the standard internal component of ZBUS UDG is a real-time Zabbix connect
 
 The following internal software component is called a "PROCESSOR." This thread receives telemetry data from the "IN" internal pipeline, converts it to enhanced JSON, resolves the Zabbix item into the Zabbix key, and sends the result to the "OUT" internal pipeline.
 
+## Catching processor
+
+Catching processor is a component of ZBUSUDG that is connecting to the selected telemetry generation and distribution service, collects the telemetry and route collected telemetry to the selected output processor. Currently, there are following catching processors are supported
+
+### Catching processor ZABBIX
+
+When selected with CLI keyword --zabbix, it will start real-time ZABBIX telemetry catcher. In this example, we are running Zabbix real-time catcher and sending received telemetry to NONE output processor.
+
+```bash
+zbusdg --zabbix-api http://127.0.0.1:8080/zabbix gateway --zabbix --none --zabbix-token zabbixapitoken
+```
+
+### Catching processor NATS_CATCHER
+
+When selected with CLI keyword --nats-catcher, ZBUSUDG starts catching thread from NATS.io service by subscribing to the channel specified by --nats-subscribe-key. In this example, the first command is running Zabbix telemetry catcher and passing it to NATS in aggregate mode. The second command receiving telemetry from NATS server and send it to STDOUT output processors
+
+```bash
+
+zbusdg -dd --zabbix-api http://127.0.0.1/zabbix gateway --nats-catcher  --zabbix-token zabbixtoken --stdout --pretty
+```
+
 ## Output processor
 
 The function of the UDG's output processor is to read prepared telemetry from the "OUT" internal pipeline and send it to the proper destination.
@@ -23,7 +44,7 @@ Here is the list of the available output processors for the Universal Data Gatew
 As the name suggests, this is a NOOP telemetry processor. If the gateway executes with this processor, the collected telemetry will be silently discarded.
 
 ```bash
-zbusdg --zabbix --zabbix-api http://127.0.0.1:8080/zabbix gateway --none --zabbix-token zabbixapitoken
+zbusdg --zabbix-api http://127.0.0.1:8080/zabbix gateway --zabbix --none --zabbix-token zabbixapitoken
 ```
 
 ### Output processor STDOUT
@@ -31,7 +52,7 @@ zbusdg --zabbix --zabbix-api http://127.0.0.1:8080/zabbix gateway --none --zabbi
 Collected telemetry received from the "OUT" internal pipeline will be delivered to the standard output. If you specify —-pretty as the UDG CLI option, the processor will prettify the output JSON.
 
 ```bash
-zbusdg --zabbix --zabbix-api http://127.0.0.1:8080/zabbix gateway --stdout --pretty --zabbix-token zabbixapitoken
+zbusdg --zabbix-api http://127.0.0.1:8080/zabbix gateway --zabbix --stdout --pretty --zabbix-token zabbixapitoken
 ```
 
 ### Output processor SOCKET
@@ -39,7 +60,7 @@ zbusdg --zabbix --zabbix-api http://127.0.0.1:8080/zabbix gateway --stdout --pre
 Telemetry in JSON format will be delivered to the raw TCP socket, one telemetry item per line.
 
 ```bash
-zbusdg --zabbix --zabbix-api http://127.0.0.1:8080/zabbix gateway --socket --pretty --zabbix-token zabbixapitoken --tcp-connect 127.0.0.1:55554
+zbusdg --zabbix-api http://127.0.0.1:8080/zabbix gateway --zabbix --socket --pretty --zabbix-token zabbixapitoken --tcp-connect 127.0.0.1:55554
 ```
 
 To accept the telemetry, you can run the following command
@@ -54,13 +75,14 @@ Collected telemetry is shipped to the ZBUS telemetry bus, stored for storage, an
 Delivery with telemetry aggregation
 
 ```
-zbusdg  --zabbix --zabbix-api http://192.168.86.29/zabbix gateway --zbus --zabbix-token zabbixapitoken --zbus-aggregate --zbus-aggregate-key mykey
+zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --zabbix  --zbus --zabbix-token zabbixapitoken --zbus-aggregate --zbus-aggregate-key mykey
 ```
 
 Delivery without aggregation,to an individual item keys
 
 ```
-zbusdg  --zabbix --zabbix-api http://192.168.86.29/zabbix gateway --zbus --zabbix-token zabbixapitoken
+zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --zabbix --nats --zabbix-token zabbixapitoken --nats-aggregate
+zbusdg --zabbix-api http://192.168.86.29/zabbix gateway --zabbix --zbus --zabbix-token zabbixapitoken
 ```
 
 ### Output processor NATS
@@ -70,13 +92,13 @@ Collected telemetry is shipped to the NATS.io server, and could be accessed by a
 Delivery with telemetry aggregation
 
 ```
-zbusdg  --zabbix --zabbix-api http://192.168.86.29/zabbix gateway --nats --zabbix-token zabbixapitoken --nats-aggregate --nats-aggregate-key mykey
+zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --zabbix --nats --zabbix-token zabbixapitoken --nats-aggregate --nats-aggregate-key mykey
 ```
 
 Delivery without aggregation,to an individual item keys
 
 ```
-zbusdg  --zabbix --zabbix-api http://192.168.86.29/zabbix gateway --nats --zabbix-token zabbixapitoken
+zbusdg --zabbix-api http://192.168.86.29/zabbix gateway  --zabbix --nats --zabbix-token zabbixapitoken
 ```
 
 ### Output processor MQTT
@@ -86,7 +108,7 @@ Collected telemetry is shipped to the MQTT server, and could be accessed by any 
 Delivery with telemetry aggregation
 
 ```
-zbusdg  --zabbix --zabbix-api http://192.168.86.29/zabbix gateway --mqtt --zabbix-token zabbixapitoken --mqtt-aggregate-key mykey
+zbusdg --zabbix-api http://192.168.86.29/zabbix gateway  --zabbix --mqtt --zabbix-token zabbixapitoken --mqtt-aggregate-key mykey
 ```
 
 ### Output processor STATSD
@@ -102,7 +124,7 @@ zbusdg  --zabbix --zabbix-api http://192.168.86.29/zabbix gateway --statsd --zab
 Collected telemetry is shipped to the Telegraf server, and could be integrated with InfluxDB, Grafana and all other Observability tools and platforms supported by Telegraf.
 
 ```
-zbusdg  --zabbix --zabbix-api http://192.168.86.29/zabbix gateway --telegraf --zabbix-token zabbixapitoken
+zbusdg  --zabbix-api http://192.168.86.29/zabbix gateway --zabbix --telegraf --zabbix-token zabbixapitoken
 ```
 
 ### Output processor CLICKHOUSE
@@ -110,7 +132,7 @@ zbusdg  --zabbix --zabbix-api http://192.168.86.29/zabbix gateway --telegraf --z
 Collected telemetry is shipped to the Clickhouse OLAP columnar storage, and could be used by any tools that supported clickhouse.
 
 ```
-zbusdg  --zabbix --zabbix-api http://192.168.86.29/zabbix gateway --clickhouse --zabbix-token zabbixapitoken
+zbusdg --zabbix-api http://192.168.86.29/zabbix gateway  --zabbix --clickhouse --zabbix-token zabbixapitoken
 ```
 
 

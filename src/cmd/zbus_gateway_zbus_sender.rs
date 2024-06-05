@@ -90,8 +90,14 @@ pub fn sender(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                                     None => continue,
                                                                 };
                                                                 match session.put(itemkey.clone(), payload.clone()).encoding(KnownEncoding::AppJson).res() {
-                                                                    Ok(_) => log::debug!("ZBX catcher->ZBUS: {} len()={} bytes", &itemkey, &payload.len()),
+                                                                    Ok(_) => log::debug!("ZBX catcher->ZBUS #1: {} len()={} bytes", &itemkey, &payload.len()),
                                                                     Err(err) => log::error!("Error ingesting {} {:?}: {:?}", &itemkey, &payload, err),
+                                                                }
+                                                                if gateway.zbus_aggregate_and_split {
+                                                                    match session.put(aggregate_key.clone(), payload.clone()).encoding(KnownEncoding::AppJson).res() {
+                                                                        Ok(_) => log::debug!("ZBX catcher->ZBUS #2: {} len()={} bytes", &aggregate_key, &payload.len()),
+                                                                        Err(err) => log::error!("Error ingesting {} {:?}: {:?}", &aggregate_key, &payload, err),
+                                                                    }
                                                                 }
                                                             }
                                                         }

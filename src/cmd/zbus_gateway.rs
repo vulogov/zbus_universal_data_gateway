@@ -1,11 +1,14 @@
 extern crate log;
 use crate::cmd;
+use crate::stdlib;
 
 pub fn run(c: &cmd::Cli, gateway: &cmd::Gateway)  {
     log::trace!("zbus_gateway::run() reached");
 
     if gateway.catchers.zabbix {
         cmd::zbus_gateway_processor::processor(c, gateway);
+    } else if gateway.catchers.nats_catcher {
+        cmd::zbus_gateway_processor_passthrough::processor(c, gateway);
     } else {
         log::error!("Catcher is not specified");
         return;
@@ -35,8 +38,12 @@ pub fn run(c: &cmd::Cli, gateway: &cmd::Gateway)  {
 
     if gateway.catchers.zabbix {
         cmd::zbus_gateway_catcher_zabbix::catcher(c, gateway);
+    } else if gateway.catchers.nats_catcher {
+        cmd::zbus_gateway_catcher_nats::catcher(c, gateway);
     } else {
         log::error!("Catcher is not specified");
         return;
     }
+
+    stdlib::threads::wait_all();
 }
