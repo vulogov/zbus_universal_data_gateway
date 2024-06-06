@@ -15,6 +15,8 @@ pub mod zbus_gateway;
 pub mod zbus_monitor;
 pub mod zbus_gateway_processor;
 pub mod zbus_gateway_processor_passthrough;
+pub mod zbus_gateway_processor_filter;
+pub mod zbus_gateway_processor_transformation;
 pub mod zbus_gateway_stdout_sender;
 pub mod zbus_gateway_zbus_sender;
 pub mod zbus_gateway_nats_sender;

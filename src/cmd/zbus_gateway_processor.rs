@@ -271,7 +271,14 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                 "id": nanoid!(),
                                             });
                                             if ! gateway.group.none {
-                                                stdlib::channel::pipe_push("out".to_string(), data.to_string());
+                                                match &gateway.script {
+                                                    Some(_) => {
+                                                        stdlib::channel::pipe_push("filter".to_string(), data.to_string());
+                                                    }
+                                                    None => {
+                                                        stdlib::channel::pipe_push("out".to_string(), data.to_string());
+                                                    }
+                                                }
                                             }
                                             // stdlib::channel::pipe_push("out".to_string(), data.to_string());
                                             // stdlib::channel::pipe_push("out".to_string(), zjson.to_string());

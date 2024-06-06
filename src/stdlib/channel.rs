@@ -17,6 +17,8 @@ pub fn pipes_init() {
     let mut q = PIPES.lock().unwrap();
     q.insert("in".to_string(), unbounded::<String>());
     q.insert("out".to_string(), unbounded::<String>());
+    q.insert("filter".to_string(), unbounded::<String>());
+    q.insert("transformation".to_string(), unbounded::<String>());
     drop(q);
 }
 

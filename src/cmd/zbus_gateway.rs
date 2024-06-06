@@ -13,6 +13,15 @@ pub fn run(c: &cmd::Cli, gateway: &cmd::Gateway)  {
         log::error!("Catcher is not specified");
         return;
     }
+    match &gateway.script {
+        Some(_) => {
+            log::debug!("Filtering and transformation enabled");
+            cmd::zbus_gateway_processor_filter::processor(c, gateway);
+            cmd::zbus_gateway_processor_transformation::processor(c, gateway);
+        }
+        None => log::debug!("Filtering disabled"),
+    }
+
     if gateway.group.stdout {
         cmd::zbus_gateway_stdout_sender::sender(c, gateway);
     } else if gateway.group.socket {
