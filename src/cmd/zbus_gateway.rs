@@ -1,6 +1,7 @@
 extern crate log;
 use crate::cmd;
 use crate::stdlib;
+use std::path::Path;
 
 pub fn run(c: &cmd::Cli, gateway: &cmd::Gateway)  {
     log::trace!("zbus_gateway::run() reached");
@@ -14,10 +15,15 @@ pub fn run(c: &cmd::Cli, gateway: &cmd::Gateway)  {
         return;
     }
     match &gateway.script {
-        Some(_) => {
-            log::debug!("Filtering and transformation enabled");
-            cmd::zbus_gateway_processor_filter::processor(c, gateway);
-            cmd::zbus_gateway_processor_transformation::processor(c, gateway);
+        Some(fname) => {
+            if Path::new(&fname).exists() {
+                log::debug!("Filtering and transformation enabled");
+                cmd::zbus_gateway_processor_filter::processor(c, gateway);
+                cmd::zbus_gateway_processor_transformation::processor(c, gateway);
+            } else {
+                log::error!("Script not found processing disabled");
+                return;
+            }
         }
         None => log::debug!("Filtering disabled"),
     }
