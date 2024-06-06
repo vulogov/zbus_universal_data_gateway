@@ -2,7 +2,8 @@ extern crate log;
 use crate::cmd;
 use crate::stdlib;
 use etime::Etime;
-use serde_json::{json, Deserializer, Value};
+use serde_json::{json, Deserializer, Value, from_str};
+use rhai::{Dynamic,Map};
 
 
 pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
@@ -14,6 +15,21 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
             t.execute(move ||
             {
                 log::debug!("PROCESSOR TRANSFORMATION thread has been started");
+                let script = match stdlib::zio::read_file(gateway.script.clone().unwrap()) {
+                    Some(script) => script,
+                    None => {
+                        log::error!("Can not get the RHAI script");
+                        return;
+                    }
+                };
+                let (engine, mut scope, ast) = match cmd::zbus_rhai::make_rhai_env_and_ast(script, &c) {
+                    Ok((engine, scope, ast)) => (engine, scope, ast),
+                    Err(err) => {
+                        log::error!("Error creating RHAI instance: {}", err);
+                        return;
+                    }
+                };
+
                 loop {
                     if ! stdlib::channel::pipe_is_empty_raw("transformation".to_string()) {
                         match stdlib::channel::pipe_pull("transformation".to_string()) {
@@ -29,7 +45,33 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                 log::error!("Received JSON is not an object: {}", &zjson);
                                                 continue;
                                             }
-                                            stdlib::channel::pipe_push("out".to_string(), zjson.to_string());
+                                            match from_str::<Dynamic>(&zjson.to_string()) {
+                                                Ok(res) => {
+                                                    if res.is_map() {
+                                                        let val = res.clone_cast::<Map>();
+                                                        match engine.call_fn::<Map>(&mut scope, &ast, "transformation", (val,)) {
+                                                            Ok(transform_result) => {
+                                                                match serde_json::to_string(&transform_result) {
+                                                                    Ok(transform_result_str) => {
+                                                                        stdlib::channel::pipe_push("out".to_string(), transform_result_str);
+                                                                    }
+                                                                    Err(err) => {
+                                                                        log::error!("Error converting transformation to JSON: {}", err);
+                                                                    }
+                                                                }
+                                                            }
+                                                            Err(err) => {
+                                                                log::error!("Error in transformation processor: {}", err);
+                                                            }
+                                                        }
+                                                    } else {
+                                                        log::error!("Value is not of Map type");
+                                                    }
+                                                }
+                                                Err(err) => {
+                                                    log::error!("Error converting from JSON: {}", err);
+                                                }
+                                            }
                                         }
                                         Err(err) => {
                                             log::error!("Error converting JSON: {:?}", err);
