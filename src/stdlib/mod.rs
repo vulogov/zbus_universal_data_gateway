@@ -6,6 +6,7 @@ pub mod channel;
 pub mod sleep;
 pub mod threads;
 pub mod time;
+pub mod zio;
 
 use crate::cmd::{Cli};
 

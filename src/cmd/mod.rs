@@ -2,6 +2,7 @@ extern crate log;
 
 use crate::stdlib::hostname;
 
+use std::path::PathBuf;
 use clap::{Args,Parser, Subcommand};
 use std::env;
 use std::fmt::Debug;
@@ -14,6 +15,8 @@ pub mod zbus_gateway;
 pub mod zbus_monitor;
 pub mod zbus_gateway_processor;
 pub mod zbus_gateway_processor_passthrough;
+pub mod zbus_gateway_processor_filter;
+pub mod zbus_gateway_processor_transformation;
 pub mod zbus_gateway_stdout_sender;
 pub mod zbus_gateway_zbus_sender;
 pub mod zbus_gateway_nats_sender;
@@ -27,6 +30,7 @@ pub mod zbus_gateway_catcher_nats;
 pub mod zbus_version;
 pub mod zbus_login;
 pub mod zbus_json;
+pub mod zbus_rhai;
 
 pub fn init() {
     log::debug!("Parsing CLI parameters");
@@ -37,6 +41,7 @@ pub fn init() {
     match &cli.command {
         Commands::Gateway(gateway) => {
             log::debug!("Execute ZBUSDG");
+            zbus_rhai::run(&cli, &gateway);
             zbus_gateway::run(&cli, &gateway);
         }
         Commands::Monitor(monitor) => {
@@ -143,6 +148,10 @@ pub struct Monitor {
 #[derive(Args, Clone, Debug)]
 #[clap(about="Execute ZBUS Universal Data Gateway")]
 pub struct Gateway {
+
+    #[arg(short, long, value_name = "SCRIPT")]
+    script: Option<PathBuf>,
+
     #[clap(help="Zabbix AUTH token", long, default_value_t = String::from(""))]
     pub zabbix_token: String,
 

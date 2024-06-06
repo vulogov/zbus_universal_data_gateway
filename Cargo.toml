@@ -1,6 +1,6 @@
 [package]
 name = "zbusdg"
-version = "0.7.0"
+version = "0.7.1"
 edition = "2021"
 description = "Universal Data Gateway for ZBUS project"
 license-file = "LICENSE"
@@ -35,3 +35,17 @@ mqtt-protocol = "0.12.0"
 statsd = "0.16.0"
 telegraf = "0.6.0"
 escape_string = "0.1.2"
+rhai-sci = "0.2.1"
+rhai-rand = "0.1.6"
+rhai-fs = "0.1.3"
+rhai-url = "0.0.5"
+rhai-ml = "0.1.2"
+
+[dependencies.rhai]
+version = "1.18.*"
+features = [
+  "std",
+  "serde",
+  "decimal",
+  "internals",
+]
