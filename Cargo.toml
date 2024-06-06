@@ -4,7 +4,7 @@ version = "0.7.0"
 edition = "2021"
 description = "Universal Data Gateway for ZBUS project"
 license-file = "LICENSE"
-homepage = "https://github.com/vulogov/zbus_universal_data_gateway"
+repository = "https://github.com/vulogov/zbus_universal_data_gateway"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
