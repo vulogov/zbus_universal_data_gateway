@@ -148,9 +148,13 @@ You can monitor elapsed time for JSON batch processing by passing --telemetry-mo
 zbusdg  --zabbix --zabbix-api http://192.168.86.29/zabbix gateway --nats --zabbix-token zabbixapitoken --telemetry-monitor-elapsed
 ```
 
-### Programmatic control of the telemetry filtering
+### Programmatic control for telemetry processing
 
-Now, you can create a scripted function, that will control if telemetry is accepted or not by ZBUSUDG. For that, you cave to create a file, for example ./scripts/allowall.rhai containing function
+You can add a programmatic control for the filtering and telemetry transformation with help from some RHAI scripting.
+
+#### Telemetry filtering
+
+You can create a scripted function, that will control if telemetry is accepted or not by ZBUSUDG. For that, you cave to create a file, for example ./scripts/allowall.rhai containing function
 
 ```rust
 fn filter(data) {
@@ -158,11 +162,30 @@ fn filter(data) {
 }
 ```
 
-and then pass reference to this script as
+and then pass reference to this script to ZBUSUDG as illustrated here
 
 ```shell
 zbusdg --zabbix-api http://127.0.0.1/zabbix gateway --zabbix --stdout --zabbix-token zabbixtoken --script ./scripts/allowall.rhai
 ```
+
+
+#### Telemetry tranformation
+
+In ZBUS, telemetry is represented in JSON format. You can programmatically add or modify content of telemetry JSON by creating a RHAI script ./scripts/allowall.rhai and define function that will transform telemetry JSON data
+
+```rust
+fn transformation(data) {
+ data.body.details.added_by_transformation = "Transformation routine been here";
+ data
+}
+```
+
+and then pass reference to this script to ZBUSUDG as illustrated here
+
+```shell
+zbusdg --zabbix-api http://127.0.0.1/zabbix gateway --zabbix --stdout --zabbix-token zabbixtoken --script ./scripts/allowall.rhai
+```
+
 
 ## Monitor ZBUS submission
 
