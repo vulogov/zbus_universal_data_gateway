@@ -148,6 +148,22 @@ You can monitor elapsed time for JSON batch processing by passing --telemetry-mo
 zbusdg  --zabbix --zabbix-api http://192.168.86.29/zabbix gateway --nats --zabbix-token zabbixapitoken --telemetry-monitor-elapsed
 ```
 
+### Programmatic control of the telemetry filtering
+
+Now, you can create a scripted function, that will control if telemetry is accepted or not by ZBUSUDG. For that, you cave to create a file, for example ./scripts/allowall.rhai containing function
+
+```rust
+fn filter(data) {
+  true
+}
+```
+
+and then pass reference to this script as
+
+```shell
+zbusdg --zabbix-api http://127.0.0.1/zabbix gateway --zabbix --stdout --zabbix-token zabbixtoken --script ./scripts/allowall.rhai
+```
+
 ## Monitor ZBUS submission
 
 In order to verify and debug your gateway, you can run zbusudg in the "monitor mode", where you subscribing to the key on ZBUS and dump on STDOUT all data packets received on that key.
