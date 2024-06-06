@@ -17,6 +17,7 @@ pub mod zbus_gateway_processor;
 pub mod zbus_gateway_processor_passthrough;
 pub mod zbus_gateway_processor_filter;
 pub mod zbus_gateway_processor_transformation;
+pub mod zbus_gateway_processor_analysis;
 pub mod zbus_gateway_stdout_sender;
 pub mod zbus_gateway_zbus_sender;
 pub mod zbus_gateway_nats_sender;
@@ -160,6 +161,9 @@ pub struct Gateway {
 
     #[clap(long, default_value_t = 1, help="Number of catcher threads")]
     pub threads: u16,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Add analythical collection and capabilities to the in-line telemetry processing")]
+    pub analysis: bool,
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Monitor elapsed time for JSON batch processing")]
     pub telemetry_monitor_elapsed: bool,

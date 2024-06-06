@@ -19,6 +19,7 @@ pub fn pipes_init() {
     q.insert("out".to_string(), unbounded::<String>());
     q.insert("filter".to_string(), unbounded::<String>());
     q.insert("transformation".to_string(), unbounded::<String>());
+    q.insert("analysis".to_string(), unbounded::<String>());
     drop(q);
 }
 

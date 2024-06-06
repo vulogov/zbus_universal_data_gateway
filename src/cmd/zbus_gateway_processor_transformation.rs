@@ -53,7 +53,11 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                             Ok(transform_result) => {
                                                                 match serde_json::to_string(&transform_result) {
                                                                     Ok(transform_result_str) => {
-                                                                        stdlib::channel::pipe_push("out".to_string(), transform_result_str);
+                                                                        if gateway.analysis {
+                                                                            stdlib::channel::pipe_push("analysis".to_string(), transform_result_str);
+                                                                        } else {
+                                                                            stdlib::channel::pipe_push("out".to_string(), transform_result_str);
+                                                                        }
                                                                     }
                                                                     Err(err) => {
                                                                         log::error!("Error converting transformation to JSON: {}", err);
