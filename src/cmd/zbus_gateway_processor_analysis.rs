@@ -109,6 +109,7 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                                             "variance":                 data.clone().variance(),
                                                                             "markov_chain_forecast":    sample.markov(),
                                                                             "anomalies":                sample.anomalies(gateway.anomalies_window),
+                                                                            "breakouts":                sample.breakouts(gateway.anomalies_window),
                                                                         }
                                                                     }
                                                                 }

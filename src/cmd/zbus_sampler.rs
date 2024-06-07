@@ -7,6 +7,7 @@ use statrs::statistics::Statistics;
 use markov_chain::Chain;
 use decorum::{R64};
 use anomaly_detection::{AnomalyDetector};
+use breakout;
 
 #[derive(Debug, Clone)]
 pub struct Sampler {
@@ -139,6 +140,27 @@ impl Sampler {
         };
         for i in anomalies.anomalies() {
             res.push(data[*i as usize].into());
+        }
+        res
+    }
+    pub fn breakouts(&mut self, n: usize)  -> Vec<f64> {
+        let mut res: Vec<f64> = Vec::new();
+        let data = self.data();
+        let bout = match breakout::multi()
+            .min_size(n)
+            .degree(2)
+            .beta(0.008)
+            .percent(None)
+            .fit(&data) {
+             Ok(ares) => ares,
+             Err(err) => {
+                 log::debug!("Breakout detection error: {}", err);
+                 return res;
+             }
+
+        };
+        for i in bout {
+            res.push(data[i as usize].into());
         }
         res
     }
