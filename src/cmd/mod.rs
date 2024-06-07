@@ -32,6 +32,7 @@ pub mod zbus_version;
 pub mod zbus_login;
 pub mod zbus_json;
 pub mod zbus_rhai;
+pub mod zbus_sampler;
 
 pub fn init() {
     log::debug!("Parsing CLI parameters");

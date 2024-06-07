@@ -277,8 +277,10 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                     }
                                                     None => {
                                                         if gateway.analysis {
-                                                            stdlib::channel::pipe_push("analysis".to_string(), zjson.to_string());
+                                                            log::debug!("Pushing {} for analysis", &itemkey);
+                                                            stdlib::channel::pipe_push("analysis".to_string(), data.to_string());
                                                         } else {
+                                                            log::debug!("Pushing {} for output", &itemkey);
                                                             stdlib::channel::pipe_push("out".to_string(), data.to_string());
                                                         }
                                                     }
