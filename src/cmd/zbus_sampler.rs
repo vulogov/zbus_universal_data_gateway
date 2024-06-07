@@ -6,6 +6,7 @@ use crate::stdlib::traits::Indicator;
 use statrs::statistics::Statistics;
 use markov_chain::Chain;
 use decorum::{R64};
+use anomaly_detection::{AnomalyDetector};
 
 #[derive(Debug, Clone)]
 pub struct Sampler {
@@ -41,6 +42,13 @@ impl Sampler {
         let mut out: Vec<f64> = Vec::new();
         for v in self.d.iter().collect::<Vec<_>>() {
             out.push(v.clone());
+        }
+        out
+    }
+    pub fn data_f32(self: &mut Sampler) -> Vec::<f32> {
+        let mut out: Vec<f32> = Vec::new();
+        for v in self.d.iter().collect::<Vec<_>>() {
+            out.push(v.clone() as f32);
         }
         out
     }
@@ -117,5 +125,21 @@ impl Sampler {
         let vals = self.data();
         let s_dev = vals.std_dev();
         return s_dev;
+    }
+    pub fn anomalies(&mut self, r: usize) -> Vec<f64> {
+        let mut res: Vec<f64> = Vec::new();
+        let data = self.data_f32();
+        let anomalies = match AnomalyDetector::fit(&data, r) {
+             Ok(ares) => ares,
+             Err(err) => {
+                 log::debug!("Anomalies detection error: {}", err);
+                 return res;
+             }
+
+        };
+        for i in anomalies.anomalies() {
+            res.push(data[*i as usize].into());
+        }
+        res
     }
 }

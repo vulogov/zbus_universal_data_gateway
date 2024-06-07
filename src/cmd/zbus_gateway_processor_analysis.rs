@@ -108,6 +108,7 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                                             "quadratic_mean":           data.clone().quadratic_mean(),
                                                                             "variance":                 data.clone().variance(),
                                                                             "markov_chain_forecast":    sample.markov(),
+                                                                            "anomalies":                sample.anomalies(gateway.anomalies_window),
                                                                         }
                                                                     }
                                                                 }

@@ -229,6 +229,9 @@ pub struct Gateway {
     #[clap(long, default_value_t = 5, help="TCP timeout for raw TCP sender")]
     pub tcp_timeout: u16,
 
+    #[clap(long, default_value_t = 7, help="Width of anomalies window")]
+    pub anomalies_window: usize,
+
     #[clap(flatten)]
     catchers: CatcherArgGroup,
 
