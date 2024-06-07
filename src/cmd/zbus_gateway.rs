@@ -28,6 +28,13 @@ pub fn run(c: &cmd::Cli, gateway: &cmd::Gateway)  {
         None => log::debug!("Filtering disabled"),
     }
 
+    if gateway.analysis {
+        log::debug!("Analythical collection and enchancing is ON");
+        cmd::zbus_gateway_processor_analysis::processor(c, gateway);
+    } else {
+        log::debug!("Analythical collection and enchancing is OFF");
+    }
+
     if gateway.group.stdout {
         cmd::zbus_gateway_stdout_sender::sender(c, gateway);
     } else if gateway.group.socket {

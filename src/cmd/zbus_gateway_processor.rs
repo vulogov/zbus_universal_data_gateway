@@ -276,7 +276,13 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                         stdlib::channel::pipe_push("filter".to_string(), data.to_string());
                                                     }
                                                     None => {
-                                                        stdlib::channel::pipe_push("out".to_string(), data.to_string());
+                                                        if gateway.analysis {
+                                                            log::debug!("Pushing {} for analysis", &itemkey);
+                                                            stdlib::channel::pipe_push("analysis".to_string(), data.to_string());
+                                                        } else {
+                                                            log::debug!("Pushing {} for output", &itemkey);
+                                                            stdlib::channel::pipe_push("out".to_string(), data.to_string());
+                                                        }
                                                     }
                                                 }
                                             }

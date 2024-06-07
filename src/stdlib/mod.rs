@@ -7,6 +7,10 @@ pub mod sleep;
 pub mod threads;
 pub mod time;
 pub mod zio;
+pub mod tsf;
+pub mod forecast_oscillator;
+pub mod fixedqueue;
+pub mod traits;
 
 use crate::cmd::{Cli};
 

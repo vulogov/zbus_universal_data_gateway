@@ -194,3 +194,7 @@ In order to verify and debug your gateway, you can run zbusudg in the "monitor m
 ```
 zbusudg monitor
 ```
+
+## Real-time metrics computation
+
+If you want to enable real-time metrics computation, you can use the --analysis CLI argument to activate the "Analysis" mode for the Universal Data Gateway (ZBUSUDG). This mode allows ZBUSUDG to perform real-time statistical computations and forecasts while collecting telemetry data. ZBUSUDG will gather the most recent 128 float-point type telemetry samples to conserve memory when enabled. It will then enhance all collected metrics with additional data attributes such as mean, max, min, variance, standard deviation, statistical oscillation, statistical time series forecast, and forecasting using Markov chains of the sample. 

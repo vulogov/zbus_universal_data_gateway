@@ -35,7 +35,11 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                         stdlib::channel::pipe_push("filter".to_string(), zjson.to_string());
                                                     }
                                                     None => {
-                                                        stdlib::channel::pipe_push("out".to_string(), zjson.to_string());
+                                                        if gateway.analysis {
+                                                            stdlib::channel::pipe_push("analysis".to_string(), zjson.to_string());
+                                                        } else {
+                                                            stdlib::channel::pipe_push("out".to_string(), zjson.to_string());
+                                                        }
                                                     }
                                                 }
                                             }
