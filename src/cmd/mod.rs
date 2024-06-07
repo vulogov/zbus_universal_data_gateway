@@ -28,6 +28,7 @@ pub mod zbus_gateway_clickhouse_sender;
 pub mod zbus_gateway_tcpsocket_sender;
 pub mod zbus_gateway_catcher_zabbix;
 pub mod zbus_gateway_catcher_nats;
+pub mod zbus_gateway_catcher_zbus;
 pub mod zbus_version;
 pub mod zbus_login;
 pub mod zbus_json;
@@ -178,6 +179,9 @@ pub struct Gateway {
     #[clap(help="ZBUS address", long, default_value_t = String::from(env::var("ZBUS_ADDRESS").unwrap_or("tcp/127.0.0.1:7447".to_string())))]
     pub zbus_connect: String,
 
+    #[clap(help="ZBUS address for the catcher", long, default_value_t = String::from(env::var("ZBUS_CATCH_ADDRESS").unwrap_or("tcp/127.0.0.1:7447".to_string())))]
+    pub zbus_catcher_connect: String,
+
     #[clap(help="NATS address", long, default_value_t = String::from(env::var("NATS_ADDRESS").unwrap_or("127.0.0.1:4222".to_string())))]
     pub nats_connect: String,
 
@@ -189,6 +193,9 @@ pub struct Gateway {
 
     #[clap(help="ZBUS aggregate key", long, default_value_t = String::from("aggregation"))]
     pub zbus_aggregate_key: String,
+
+    #[clap(help="ZBUS key from which catcher will receive telemetry", long, default_value_t = String::from("aggregation"))]
+    pub zbus_subscribe_key: String,
 
     #[clap(help="NATS aggregate key", long, default_value_t = String::from("aggregation"))]
     pub nats_aggregate_key: String,
@@ -278,6 +285,9 @@ pub struct CatcherArgGroup {
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Catch telemetry from NATS")]
     pub nats_catcher: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Catch telemetry from ZBUS")]
+    pub zbus_catcher: bool,
 
 }
 
