@@ -18,6 +18,7 @@ pub mod zbus_gateway_processor_passthrough;
 pub mod zbus_gateway_processor_filter;
 pub mod zbus_gateway_processor_transformation;
 pub mod zbus_gateway_processor_analysis;
+pub mod zbus_gateway_processor_prometheus;
 pub mod zbus_gateway_stdout_sender;
 pub mod zbus_gateway_zbus_sender;
 pub mod zbus_gateway_nats_sender;
@@ -29,6 +30,7 @@ pub mod zbus_gateway_tcpsocket_sender;
 pub mod zbus_gateway_catcher_zabbix;
 pub mod zbus_gateway_catcher_nats;
 pub mod zbus_gateway_catcher_zbus;
+pub mod zbus_gateway_catcher_prometheus_scraper;
 pub mod zbus_version;
 pub mod zbus_login;
 pub mod zbus_json;
@@ -218,6 +220,9 @@ pub struct Gateway {
     #[clap(help="CLICKHOUSE database", long, default_value_t = String::from("zbus"))]
     pub clickhouse_database: String,
 
+    #[clap(help="Prometheus exporter endpoints", long)]
+    pub prometheus_exporter_connect: Vec<String>,
+
     #[clap(long, action = clap::ArgAction::SetTrue, help="Disable multicast discovery of ZENOH bus")]
     pub zbus_disable_multicast_scout: bool,
 
@@ -238,6 +243,9 @@ pub struct Gateway {
 
     #[clap(long, default_value_t = 7, help="Width of anomalies window")]
     pub anomalies_window: usize,
+
+    #[clap(long, default_value_t = 120, help="Delay (in seconds) between prometheus scraper run")]
+    pub prometheus_scraper_run_every: u16,
 
     #[clap(flatten)]
     catchers: CatcherArgGroup,
@@ -270,7 +278,7 @@ pub struct GatewayArgGroup {
     #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to TELEGRAF")]
     pub telegraf: bool,
 
-    #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to TELEGRAF")]
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to CLICKHOUSE")]
     pub clickhouse: bool,
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to NONE")]
@@ -288,6 +296,9 @@ pub struct CatcherArgGroup {
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Catch telemetry from ZBUS")]
     pub zbus_catcher: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Receive telemetry from Prometheus scraper")]
+    pub prometheus_exporter_catcher: bool,
 
 }
 
