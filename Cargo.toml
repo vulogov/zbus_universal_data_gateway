@@ -47,6 +47,13 @@ decorum = "0.3.1"
 anomaly_detection = "0.3.0"
 breakout = "0.2.1"
 prometheus-parse = "0.2.5"
+iset = "0.2.2"
+fuzzy-matcher = "0.3.7"
+distance = "0.4.0"
+voca_rs = "1.15.2"
+fancy-regex = "0.13.0"
+charabia = "0.8.11"
+grok = "2.0.0"
 
 [dependencies.rhai]
 version = "1.18.*"

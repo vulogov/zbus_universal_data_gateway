@@ -1,5 +1,6 @@
 extern crate log;
 use crate::cmd;
+use crate::rhai_lib;
 use std::fs;
 use rhai::{Engine, Scope, Dynamic, CallFnOptions, EvalAltResult, AST, Map};
 use rhai::packages::Package;
@@ -11,6 +12,9 @@ use rhai_ml::MLPackage;
 
 pub fn make_rhai_env(c: &cmd::Cli) -> Result<(Engine, Scope), Box<EvalAltResult>> {
     let mut engine = Engine::new();
+    engine.set_max_map_size(0);
+    let mut engine = Engine::new();
+    engine.set_max_expr_depths(50, 25);
     engine.register_global_module(SciPackage::new().as_shared_module());
     engine.register_global_module(RandomPackage::new().as_shared_module());
     engine.register_global_module(FilesystemPackage::new().as_shared_module());
@@ -20,7 +24,8 @@ pub fn make_rhai_env(c: &cmd::Cli) -> Result<(Engine, Scope), Box<EvalAltResult>
 
     scope.push("ZBUS_PROTOCOL_VERSION", Dynamic::from(c.protocol_version.clone()))
          .push("ZBUS_PLATFORM_NAME", Dynamic::from(c.platform_name.clone()))
-         .push("ZBUS_SOURCE", Dynamic::from(c.source.clone()));
+         .push("ZBUS_SOURCE", Dynamic::from(c.source.clone()))
+         .push("ZBUS_ROUTE", Dynamic::from(c.route.clone()));
 
     initscope(&mut scope);
     initlib(&mut engine, c);
@@ -69,9 +74,13 @@ pub fn initscope(_scope: &mut Scope) {
 
 }
 
-pub fn initlib(_engine: &mut Engine, _c: &cmd::Cli)  {
+pub fn initlib(engine: &mut Engine, _c: &cmd::Cli)  {
     log::debug!("Initializing ZBUS RHAI library");
-
+    rhai_lib::timestamp::init(engine);
+    rhai_lib::zbus_log::init(engine);
+    rhai_lib::filters::init(engine);
+    rhai_lib::string::init(engine);
+    rhai_lib::grok::init(engine);
 }
 
 pub fn run(_c: &cmd::Cli, gateway: &cmd::Gateway)  {
