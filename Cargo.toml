@@ -1,6 +1,6 @@
 [package]
 name = "zbusdg"
-version = "0.7.3"
+version = "0.7.4"
 edition = "2021"
 description = "Universal Data Gateway for ZBUS project"
 license-file = "LICENSE"
@@ -46,6 +46,7 @@ markov-chain = "0.1.1"
 decorum = "0.3.1"
 anomaly_detection = "0.3.0"
 breakout = "0.2.1"
+prometheus-parse = "0.2.5"
 
 [dependencies.rhai]
 version = "1.18.*"

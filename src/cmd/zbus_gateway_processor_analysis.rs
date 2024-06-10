@@ -95,7 +95,7 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                             "body": {
                                                                 "details": {
                                                                     "details": {
-                                                                        "analythical_data": {
+                                                                        "analytical_data": {
                                                                             "n_of_samples":             sample.len(),
                                                                             "statistical_oscillator":   sample.oscillator(),
                                                                             "tsf_next":                 sample.tsf_next(),

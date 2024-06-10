@@ -33,6 +33,22 @@ zbusdg  --zabbix-api http://127.0.0.1/zabbix gateway --zabbix --nats --zabbix-to
 zbusdg --zabbix-api http://127.0.0.1/zabbix gateway --nats-catcher  --zabbix-token zabbixtoken --stdout --pretty
 ```
 
+### Catching processor ZBUS
+
+When selected with CLI keyword --zbus-catcher, ZBUSUDG starts catching thread from ZBUS telemetry bus by subscribing to the topic specified by --zbus-subscribe-key. In this example we are catching metrics from telemetry bus and sending them to standard output.
+
+```bash
+zbusdg  --zabbix-api http://127.0.0.1/zabbix gateway --zbus-catcher --stdout --pretty 
+```
+
+### Catching processor PROMETHEUS_EXPORTER
+
+When selected with CLI keyword --prometheus-exporter-catcher, ZBUSUDG starts collecting thread that will scrapte metrics from Prometheus exporters and convert them to ZBUS telemetry format. In this example we are scrapting Prometheus telemetry and sending them to standard output.
+
+```bash
+zbusdg  --zabbix-api http://127.0.0.1/zabbix gateway --prometheus-exporter-catcher --stdout --pretty  
+```
+
 ## Output processor
 
 The function of the UDG's output processor is to read prepared telemetry from the "OUT" internal pipeline and send it to the proper destination.
@@ -197,4 +213,4 @@ zbusudg monitor
 
 ## Real-time metrics computation
 
-If you want to enable real-time metrics computation, you can use the --analysis CLI argument to activate the "Analysis" mode for the Universal Data Gateway (ZBUSUDG). This mode allows ZBUSUDG to perform real-time statistical computations and forecasts while collecting telemetry data. ZBUSUDG will gather the most recent 128 float-point type telemetry samples to conserve memory when enabled. It will then enhance all collected metrics with additional data attributes such as mean, max, min, variance, standard deviation, statistical oscillation, statistical time series forecast, anomalies detection using statistical analysis, breakouts in a sample and forecasting using Markov chains of the sample. 
+If you want to enable real-time metrics computation, you can use the --analysis CLI argument to activate the "Analysis" mode for the Universal Data Gateway (ZBUSUDG). This mode allows ZBUSUDG to perform real-time statistical computations and forecasts while collecting telemetry data. ZBUSUDG will gather the most recent 128 float-point type telemetry samples. Then it will then enhance relevant metric with additional data attributes such as mean, max, min, variance, standard deviation, statistical oscillation, statistical time series forecast, anomalies detection using statistical analysis, breakouts in a sample and forecasting using Markov chains of the sample.

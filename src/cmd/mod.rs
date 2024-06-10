@@ -18,6 +18,7 @@ pub mod zbus_gateway_processor_passthrough;
 pub mod zbus_gateway_processor_filter;
 pub mod zbus_gateway_processor_transformation;
 pub mod zbus_gateway_processor_analysis;
+pub mod zbus_gateway_processor_prometheus;
 pub mod zbus_gateway_stdout_sender;
 pub mod zbus_gateway_zbus_sender;
 pub mod zbus_gateway_nats_sender;
@@ -28,6 +29,8 @@ pub mod zbus_gateway_clickhouse_sender;
 pub mod zbus_gateway_tcpsocket_sender;
 pub mod zbus_gateway_catcher_zabbix;
 pub mod zbus_gateway_catcher_nats;
+pub mod zbus_gateway_catcher_zbus;
+pub mod zbus_gateway_catcher_prometheus_scraper;
 pub mod zbus_version;
 pub mod zbus_login;
 pub mod zbus_json;
@@ -178,6 +181,9 @@ pub struct Gateway {
     #[clap(help="ZBUS address", long, default_value_t = String::from(env::var("ZBUS_ADDRESS").unwrap_or("tcp/127.0.0.1:7447".to_string())))]
     pub zbus_connect: String,
 
+    #[clap(help="ZBUS address for the catcher", long, default_value_t = String::from(env::var("ZBUS_CATCH_ADDRESS").unwrap_or("tcp/127.0.0.1:7447".to_string())))]
+    pub zbus_catcher_connect: String,
+
     #[clap(help="NATS address", long, default_value_t = String::from(env::var("NATS_ADDRESS").unwrap_or("127.0.0.1:4222".to_string())))]
     pub nats_connect: String,
 
@@ -189,6 +195,9 @@ pub struct Gateway {
 
     #[clap(help="ZBUS aggregate key", long, default_value_t = String::from("aggregation"))]
     pub zbus_aggregate_key: String,
+
+    #[clap(help="ZBUS key from which catcher will receive telemetry", long, default_value_t = String::from("aggregation"))]
+    pub zbus_subscribe_key: String,
 
     #[clap(help="NATS aggregate key", long, default_value_t = String::from("aggregation"))]
     pub nats_aggregate_key: String,
@@ -211,6 +220,9 @@ pub struct Gateway {
     #[clap(help="CLICKHOUSE database", long, default_value_t = String::from("zbus"))]
     pub clickhouse_database: String,
 
+    #[clap(help="Prometheus exporter endpoints", long)]
+    pub prometheus_exporter_connect: Vec<String>,
+
     #[clap(long, action = clap::ArgAction::SetTrue, help="Disable multicast discovery of ZENOH bus")]
     pub zbus_disable_multicast_scout: bool,
 
@@ -231,6 +243,9 @@ pub struct Gateway {
 
     #[clap(long, default_value_t = 7, help="Width of anomalies window")]
     pub anomalies_window: usize,
+
+    #[clap(long, default_value_t = 120, help="Delay (in seconds) between prometheus scraper run")]
+    pub prometheus_scraper_run_every: u16,
 
     #[clap(flatten)]
     catchers: CatcherArgGroup,
@@ -263,7 +278,7 @@ pub struct GatewayArgGroup {
     #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to TELEGRAF")]
     pub telegraf: bool,
 
-    #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to TELEGRAF")]
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to CLICKHOUSE")]
     pub clickhouse: bool,
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to NONE")]
@@ -278,6 +293,12 @@ pub struct CatcherArgGroup {
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Catch telemetry from NATS")]
     pub nats_catcher: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Catch telemetry from ZBUS")]
+    pub zbus_catcher: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Receive telemetry from Prometheus scraper")]
+    pub prometheus_exporter_catcher: bool,
 
 }
 
