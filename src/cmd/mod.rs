@@ -25,6 +25,7 @@ pub mod zbus_gateway_nats_sender;
 pub mod zbus_gateway_rhai_sender;
 pub mod zbus_gateway_mqtt_sender;
 pub mod zbus_gateway_statsd_sender;
+pub mod zbus_gateway_zabbix_sender;
 pub mod zbus_gateway_telegraf_sender;
 pub mod zbus_gateway_clickhouse_sender;
 pub mod zbus_gateway_tcpsocket_sender;
@@ -262,6 +263,12 @@ pub struct Gateway {
     #[clap(help="SYSLOGD key", long, default_value_t = String::from("zbus/log/syslog"))]
     pub syslogd_key: String,
 
+    #[clap(help="SYSLOGD log name", long, default_value_t = String::from("/var/log/syslog"))]
+    pub syslog_file_name: String,
+
+    #[clap(help="Address of Zabbix Sender interface", long, default_value_t = String::from("127.0.0.1:10050"))]
+    pub zabbix_sender_connect: String,
+
     #[clap(flatten)]
     catchers: CatcherArgGroup,
 
@@ -298,6 +305,9 @@ pub struct GatewayArgGroup {
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to a RHAI script")]
     pub rhai: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to ZABBIX trapper")]
+    pub zabbix_sender: bool,
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Send catched data to NONE")]
     pub none: bool,
