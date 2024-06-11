@@ -32,6 +32,7 @@ pub mod zbus_gateway_catcher_zabbix;
 pub mod zbus_gateway_catcher_nats;
 pub mod zbus_gateway_catcher_zbus;
 pub mod zbus_gateway_catcher_rhai;
+pub mod zbus_gateway_catcher_syslogd;
 pub mod zbus_gateway_catcher_prometheus_scraper;
 pub mod zbus_version;
 pub mod zbus_login;
@@ -252,6 +253,15 @@ pub struct Gateway {
     #[clap(long, default_value_t = 5, help="Delay (in seconds) between running RHAI catcher function")]
     pub rhai_catcher_run_every: u16,
 
+    #[clap(long, default_value_t = 514, help="UDP port for syslogd catcher")]
+    pub syslogd_udp_port: u16,
+
+    #[clap(long, default_value_t = 1024, help="SYSLOGD catcher capacity")]
+    pub syslogd_catcher_capacity: u16,
+
+    #[clap(help="SYSLOGD key", long, default_value_t = String::from("zbus/log/syslog"))]
+    pub syslogd_key: String,
+
     #[clap(flatten)]
     catchers: CatcherArgGroup,
 
@@ -310,6 +320,9 @@ pub struct CatcherArgGroup {
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Generate telemetry data by the script")]
     pub rhai_catcher: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Running syslogd catcher")]
+    pub syslogd_catcher: bool,
 
 }
 

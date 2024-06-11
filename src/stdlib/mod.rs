@@ -11,6 +11,7 @@ pub mod tsf;
 pub mod forecast_oscillator;
 pub mod fixedqueue;
 pub mod traits;
+pub mod syslog;
 
 use crate::cmd::{Cli};
 

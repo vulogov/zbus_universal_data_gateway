@@ -16,6 +16,8 @@ pub fn run(c: &cmd::Cli, gateway: &cmd::Gateway)  {
         cmd::zbus_gateway_processor_passthrough::processor(c, gateway);
     } else if gateway.catchers.prometheus_exporter_catcher {
         cmd::zbus_gateway_processor_prometheus::processor(c, gateway);
+    } else if gateway.catchers.syslogd_catcher {
+        cmd::zbus_gateway_processor_passthrough::processor(c, gateway);
     } else {
         log::error!("Catcher is not specified");
         return;
@@ -76,6 +78,8 @@ pub fn run(c: &cmd::Cli, gateway: &cmd::Gateway)  {
         cmd::zbus_gateway_catcher_prometheus_scraper::catcher(c, gateway);
     } else if gateway.catchers.rhai_catcher {
         cmd::zbus_gateway_catcher_rhai::catcher(c, gateway);
+    } else if gateway.catchers.syslogd_catcher {
+        cmd::zbus_gateway_catcher_syslogd::catcher(c, gateway);
     } else {
         log::error!("Catcher is not specified");
         return;

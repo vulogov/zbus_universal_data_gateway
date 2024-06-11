@@ -43,10 +43,18 @@ zbusdg  --zabbix-api http://127.0.0.1/zabbix gateway --zbus-catcher --stdout --p
 
 ### Catching processor PROMETHEUS_EXPORTER
 
-When selected with CLI keyword --prometheus-exporter-catcher, ZBUSUDG starts collecting thread that will scrapte metrics from Prometheus exporters and convert them to ZBUS telemetry format. In this example we are scrapting Prometheus telemetry and sending them to standard output.
+When selected with CLI keyword --prometheus-exporter-catcher, ZBUSUDG starts collection thread that will scrapte metrics from Prometheus exporters and convert them to ZBUS telemetry format. In this example we are scrapting Prometheus telemetry and sending them to standard output.
 
 ```bash
 zbusdg  --zabbix-api http://127.0.0.1/zabbix gateway --prometheus-exporter-catcher --stdout --pretty  
+```
+
+### Catching SYSLOGD messages
+
+When selected with CLI keyword --syslogd-catcher, ZBUSUDG starts collection thread that will receive a standard syslogd messages and pass it for delivery to any supported output processor.
+
+```bash
+zbusdg  gateway --syslogd-catcher --stdout --pretty  
 ```
 
 ## Output processor
