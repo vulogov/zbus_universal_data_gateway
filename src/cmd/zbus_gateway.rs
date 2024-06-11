@@ -61,6 +61,8 @@ pub fn run(c: &cmd::Cli, gateway: &cmd::Gateway)  {
         cmd::zbus_gateway_clickhouse_sender::sender(c, gateway);
     } else if gateway.group.rhai {
         cmd::zbus_gateway_rhai_sender::sender(c, gateway);
+    } else if gateway.group.zabbix_sender {
+        cmd::zbus_gateway_zabbix_sender::sender(c, gateway);
     } else if gateway.group.none {
         log::info!("Sender is set to NONE");
     } else {

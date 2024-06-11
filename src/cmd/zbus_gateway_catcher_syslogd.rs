@@ -67,6 +67,7 @@ fn receive(sock: &UdpSocket, buf: &mut [u8], c: &cmd::Cli, gateway: &cmd::Gatewa
                         "destination":  gateway.syslogd_key.clone(),
                         "properties":   {
                             "timestamp":        timestamp,
+                            "zabbix_item":      format!("log[{}]", &gateway.syslog_file_name), 
                             "syslog_facility":  msg.facility,
                             "syslog_severity":  msg.severity,
                             "syslog_version":   msg.version,

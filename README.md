@@ -159,6 +159,14 @@ Collected telemetry is shipped to the Clickhouse OLAP columnar storage, and coul
 zbusdg --zabbix-api http://192.168.86.29/zabbix gateway  --zabbix --clickhouse --zabbix-token zabbixapitoken
 ```
 
+### Output processor ZABBIX SENDER
+
+Collected telemetry is shipped to Zabbix Sender interface. Zabbix hostname will be extracted from origin field and Zabbix key will be extracted from zabbix_item key
+
+```
+zbusdg gateway --syslogd-catcher --zabbix-sender --zabbix-sender-connect 127.0.0.1:10051
+```
+
 
 ### Send UDG telemetry to ZBUS
 

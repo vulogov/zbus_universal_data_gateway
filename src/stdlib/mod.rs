@@ -12,6 +12,7 @@ pub mod forecast_oscillator;
 pub mod fixedqueue;
 pub mod traits;
 pub mod syslog;
+pub mod zabbix;
 
 use crate::cmd::{Cli};
 
