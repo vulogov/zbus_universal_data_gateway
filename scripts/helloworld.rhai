@@ -7,6 +7,10 @@ fn transformation(data) {
   data
 }
 
+fn processor(data) {
+    print(data);
+    data
+}
 
 fn generator() {
     log::info("Generating two telemetry items");

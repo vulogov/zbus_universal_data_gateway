@@ -38,7 +38,7 @@ zbusdg --zabbix-api http://127.0.0.1/zabbix gateway --nats-catcher  --zabbix-tok
 When selected with CLI keyword --zbus-catcher, ZBUSUDG starts catching thread from ZBUS telemetry bus by subscribing to the topic specified by --zbus-subscribe-key. In this example we are catching metrics from telemetry bus and sending them to standard output.
 
 ```bash
-zbusdg  --zabbix-api http://127.0.0.1/zabbix gateway --zbus-catcher --stdout --pretty 
+zbusdg  --zabbix-api http://127.0.0.1/zabbix gateway --zbus-catcher --stdout --pretty
 ```
 
 ### Catching processor PROMETHEUS_EXPORTER
@@ -185,7 +185,7 @@ zbusdg --zabbix-api http://127.0.0.1/zabbix gateway --zabbix --stdout --zabbix-t
 ```
 
 
-#### Telemetry tranformation
+#### Telemetry transformation
 
 In ZBUS, telemetry is represented in JSON format. You can programmatically add or modify content of telemetry JSON by creating a RHAI script ./scripts/allowall.rhai and define function that will transform telemetry JSON data
 
@@ -202,6 +202,89 @@ and then pass reference to this script to ZBUSUDG as illustrated here
 zbusdg --zabbix-api http://127.0.0.1/zabbix gateway --zabbix --stdout --zabbix-token zabbixtoken --script ./scripts/allowall.rhai
 ```
 
+## Programmatic telemetry generation and processing
+
+ZBUSUDG can generate and process programmatically created telemetry. This capability is supported by two functions: the generator function and the processing function. The generator function accepts no arguments and returns a list of ObjectMaps representing the telemetry. As an illustration, the generator function generator() generates two telemetry items each time it runs. The first item is a static value, while the second is a programmatically generated random float.
+
+```rust
+fn generator() {
+    log::info("Generating two telemetry items");
+    let data_pi = #{
+        body: #{
+            details: #{
+                destination:    "zbus/generated_metric/local/pi",
+                origin:         ZBUS_SOURCE,
+                details:        #{
+                        contentType:    0,
+                        detailType:     "",
+                        data:           3.14,
+                },
+            },
+            properties: #{
+                name:       "Return a static metric with a value of PI",
+                tags:       [],
+                itemname:   "pi",
+                timestamp:  timestamp::timestamp_ms(),
+            },
+        },
+        headers: #{
+            version:                ZBUS_PROTOCOL_VERSION,
+            encryptionAlgorithm:    (),
+            compressionAlgorithm:   (),
+            cultureCode:            (),
+            messageType:            "generated_telemetry",
+            route:                  ZBUS_ROUTE,
+            streamName:             ZBUS_SOURCE,
+        },
+    };
+
+    let data_float = #{
+        body: #{
+            details: #{
+                destination:    "zbus/generated_metric/local/random_float",
+                origin:         ZBUS_SOURCE,
+                details:        #{
+                        contentType:    0,
+                        detailType:     "",
+                        data:           rand_float(0.1, 9.99),
+                },
+            },
+            properties: #{
+                name:       "Return a static metric with a value of PI",
+                tags:       [],
+                itemname:   "random_float",
+                timestamp:  timestamp::timestamp_ms(),
+            },
+        },
+        headers: #{
+            version:                ZBUS_PROTOCOL_VERSION,
+            encryptionAlgorithm:    (),
+            compressionAlgorithm:   (),
+            cultureCode:            (),
+            messageType:            "generated_telemetry",
+            route:                  ZBUS_ROUTE,
+            streamName:             ZBUS_SOURCE,
+        },
+    };
+
+    [data_pi, data_float]
+}
+```
+
+The function processor() is designed to handle telemetry post-processing. It receives a telemetry item as a parameter; however, the return value is currently disregarded. The provided sample function simply prints the telemetry and returns it. This summarizes the function's current behavior.
+
+```rust
+fn processor(data) {
+    print(data);
+    data
+}
+```
+
+To enable the use of programmatic telemetry processors and catchers, it is necessary to specify the CLI option --rhai-catcher to initiate the programmatic telemetry generator. Similarly, the launch of the programmatic telemetry receiver requires the use of the --rhai CLI option. This enables the smooth flow of telemetry through the ZBUSUDG, facilitating delivery to a programmatic processor.
+
+```bash
+zbusdg gateway --rhai-catcher --rhai --script ./scripts/helloworld.rhai --analysis
+```
 
 ## Monitor ZBUS submission
 

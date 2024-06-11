@@ -54,6 +54,7 @@ voca_rs = "1.15.2"
 fancy-regex = "0.13.0"
 charabia = "0.8.11"
 grok = "2.0.0"
+inari = "1.1.0"
 
 [dependencies.rhai]
 version = "1.18.*"

@@ -81,6 +81,10 @@ pub fn initlib(engine: &mut Engine, _c: &cmd::Cli)  {
     rhai_lib::filters::init(engine);
     rhai_lib::string::init(engine);
     rhai_lib::grok::init(engine);
+    rhai_lib::conversions::init(engine);
+    rhai_lib::metric::init(engine);
+    rhai_lib::dynamicsampler::init(engine);
+    rhai_lib::interval::init(engine);
 }
 
 pub fn run(_c: &cmd::Cli, gateway: &cmd::Gateway)  {
