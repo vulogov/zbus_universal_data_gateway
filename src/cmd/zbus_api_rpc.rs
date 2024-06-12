@@ -14,6 +14,8 @@ pub trait Rpc {
 	fn version(&self) -> Result<String>;
     #[rpc(name = "last")]
 	fn last(&self, key: String) -> Result<serde_json::Value>;
+    #[rpc(name = "sample")]
+	fn sample(&self, key: String) -> Result<serde_json::Value>;
 }
 
 pub struct RpcImpl;
@@ -22,9 +24,22 @@ impl Rpc for RpcImpl {
 		Ok(env!("CARGO_PKG_VERSION").to_string())
 	}
     fn last(&self, key: String) -> Result<serde_json::Value> {
-		match cmd::zbus_api::get_metric(key) {
+		match cmd::zbus_api::get_metric(key.clone()) {
             Some(samples) => {
-                return Ok(serde_json::json!(42));
+                match samples.last() {
+                    Some(val) => return Ok(val),
+                    None => Ok(serde_json::json!(null)),
+                }
+            }
+            None => {
+                return Ok(serde_json::json!(null));
+            }
+        }
+	}
+    fn sample(&self, key: String) -> Result<serde_json::Value> {
+		match cmd::zbus_api::get_metric(key.clone()) {
+            Some(samples) => {
+                return Ok(serde_json::json!(samples.data()));
             }
             None => {
                 return Ok(serde_json::json!(null));

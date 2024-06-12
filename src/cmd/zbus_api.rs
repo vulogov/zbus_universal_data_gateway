@@ -17,7 +17,6 @@ lazy_static! {
 }
 
 pub fn create_metric(n: String) {
-    log::debug!("Create metric for rpc: {}", &n);
     let mut q = SAMPLES.lock().unwrap();
     q.insert(n.to_string(), cmd::zbus_value_sampler::ValueSampler::init());
     drop(q);
@@ -26,12 +25,10 @@ pub fn create_metric(n: String) {
 pub fn push_metric(k: String, v: Value) {
     let mut s = SAMPLES.lock().unwrap();
     if ! s.contains_key(&k) {
-        // log::debug!("New key: {}", &k);
         let mut sample = cmd::zbus_value_sampler::ValueSampler::init();
         sample.set(v);
         s.insert(k.clone(), sample);
     } else {
-        log::debug!("Set to key: {}", &k);
         let sample = s.get_mut(&k).unwrap();
         sample.set(v);
     }
@@ -41,7 +38,6 @@ pub fn push_metric(k: String, v: Value) {
 pub fn get_metric(k: String) -> Option<cmd::zbus_value_sampler::ValueSampler> {
     let s = SAMPLES.lock().unwrap();
     if ! s.contains_key(&k) {
-        log::error!("No key: {}", &k);
         drop(s);
         return None;
     }
@@ -117,7 +113,7 @@ pub fn run(c: &cmd::Cli, apicli: &cmd::Api)  {
                                                 return;
                                             }
                                             let itemkey = match cmd::zbus_gateway_processor::zabbix_json_get_sub_subkey_raw(&zjson, "body".to_string(), "details".to_string(), "destination".to_string()) {
-                                                Some(key) => key,
+                                                Some(key) => key.as_str().unwrap().to_string(),
                                                 None => return,
                                             };
                                             let d = match cmd::zbus_gateway_processor::zabbix_json_get_sub_subkey_raw(&zjson, "body".to_string(), "details".to_string(), "details".to_string()) {
@@ -128,8 +124,7 @@ pub fn run(c: &cmd::Cli, apicli: &cmd::Api)  {
                                                 Some(d) => d,
                                                 None => return,
                                             };
-                                            // log::debug!("API storing value for {}", &itemkey);
-                                            push_metric(itemkey.to_string().clone(), data);
+                                            push_metric(itemkey.clone(), data);
                                         }
                                         Err(err) => {
                                             log::error!("Error while converting JSON data from ZENOH bus: {:?}", err);

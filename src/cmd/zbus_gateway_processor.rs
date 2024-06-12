@@ -237,6 +237,7 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                 Some(zbus_key) => zbus_key,
                                                 None => continue,
                                             };
+                                            let full_zbus_itemkey = format!("zbus/metric/{}/{}{}", &c.protocol_version, &c.platform_name, &zbus_itemkey);
                                             let data = json!({
                                                 "headers": {
                                                     "messageType":      "telemetry",
@@ -250,13 +251,14 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                 "body": {
                                                     "details": {
                                                         "origin":       zabbix_json_get_subkey(&zjson, "host".to_string(), "host".to_string()),
-                                                        "destination":  zbus_itemkey.clone(),
+                                                        "destination":  full_zbus_itemkey.clone(),
                                                         "properties":   {
                                                             "zabbix_clock":     zabbix_json_get(&zjson, "clock".to_string()),
                                                             "zabbix_ns":        zabbix_json_get(&zjson, "ns".to_string()),
                                                             "zabbix_host_name": zabbix_json_get_subkey(&zjson, "host".to_string(), "name".to_string()),
                                                             "zabbix_itemid":    zabbix_json_get(&zjson, "itemid".to_string()),
                                                             "zabbix_item":      itemkey.clone(),
+                                                            "zbus_item":        zbus_itemkey.clone(),
                                                             "name":             zabbix_json_get(&zjson, "name".to_string()),
                                                             "tags":             zabbix_json_get(&zjson, "tags".to_string()),
 
