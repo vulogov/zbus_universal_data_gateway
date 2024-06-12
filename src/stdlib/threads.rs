@@ -24,12 +24,13 @@ pub fn wait_all() {
     loop {
         let t = THREADS.lock().unwrap();
         let active_threads = t.active_threads();
-        drop(t);
         if active_threads == 0 {
+            drop(t);
             log::debug!("ThreadManager do not have any active threads");
             break;
         }
-        log::debug!("{} active threads in ThreadManager", active_threads);
+        log::debug!("{} active threads, {} busy threads and {} waiting threads  in ThreadManager", active_threads, t.busy_threads(), t.waiting_threads());
+        drop(t);
         stdlib::sleep::sleep(60);
     }
 }
