@@ -306,8 +306,60 @@ zbusdg gateway --rhai-catcher --rhai --script ./scripts/helloworld.rhai --analys
 
 In order to verify and debug your gateway, you can run zbusudg in the "monitor mode", where you subscribing to the key on ZBUS and dump on STDOUT all data packets received on that key.
 
-```
+```bash
 zbusudg monitor
+```
+
+## JSON RPC interface for querying the metrics that been discovered on ZBUS
+
+You can query metrics that has been published on ZBUS. JSON RPC server is listening for the ZBUS topic for submitted metric and stores last 128 real-time values of all discovered metrics. By default JSON RPC server is listening on port 10060 but you can redefine that with CLI option --api-listen . You can also change the topic of ZBUS with CLI option --zbus-key. JSON RPC api server launched as:
+
+```bash
+zbusudg api
+```
+
+The server exposes following methods
+
+### metrics - receiving the list of discovered metrics
+
+This call returns the list of discovered metrics published on ZBUS to the specified topic.
+
+```bash
+curl -X POST -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"id","method":"metrics","params":[]}' http://127.0.0.1:10060
+```
+
+Sample result will be
+
+```json
+{"jsonrpc":"2.0","result":["zbus/metric/v2/local/agent.ping","zbus/metric/v2/local/net.if.in/enp0s3","zbus/metric/v2/local/net.if.in/enp0s3/dropped","zbus/metric/v2/local/net.if.in/enp0s3/errors","zbus/metric/v2/local/net.if.out/enp0s3","zbus/metric/v2/local/net.if.out/enp0s3/dropped","zbus/metric/v2/local/net.if.out/enp0s3/errors","zbus/metric/v2/local/proc.num","zbus/metric/v2/local/proc.num/run","zbus/metric/v2/local/system.cpu.intr","zbus/metric/v2/local/system.cpu.load/all/avg1","zbus/metric/v2/local/system.cpu.load/all/avg15","zbus/metric/v2/local/system.cpu.load/all/avg5","zbus/metric/v2/local/system.cpu.switches","zbus/metric/v2/local/system.cpu.util","zbus/metric/v2/local/system.cpu.util/guest","zbus/metric/v2/local/system.cpu.util/guest_nice","zbus/metric/v2/local/system.cpu.util/idle","zbus/metric/v2/local/system.cpu.util/interrupt","zbus/metric/v2/local/system.cpu.util/iowait","zbus/metric/v2/local/system.cpu.util/nice","zbus/metric/v2/local/system.cpu.util/softirq","zbus/metric/v2/local/system.cpu.util/steal","zbus/metric/v2/local/system.cpu.util/system","zbus/metric/v2/local/system.cpu.util/user","zbus/metric/v2/local/system.localtime","zbus/metric/v2/local/system.swap.size/free","zbus/metric/v2/local/system.swap.size/pfree","zbus/metric/v2/local/system.swap.size/total","zbus/metric/v2/local/system.uptime","zbus/metric/v2/local/system.users.num","zbus/metric/v2/local/vfs.dev.queue_size/sda","zbus/metric/v2/local/vfs.dev.read.await/sda","zbus/metric/v2/local/vfs.dev.read.rate/sda","zbus/metric/v2/local/vfs.dev.read.time.rate/sda","zbus/metric/v2/local/vfs.dev.util/sda","zbus/metric/v2/local/vfs.dev.write.await/sda","zbus/metric/v2/local/vfs.dev.write.rate/sda","zbus/metric/v2/local/vfs.dev.write.time.rate/sda","zbus/metric/v2/local/vfs.file.contents","zbus/metric/v2/local/vfs.fs.dependent.inode/\\/pfree","zbus/metric/v2/local/vfs.fs.dependent.inode/\\boot/pfree","zbus/metric/v2/local/vfs.fs.dependent.size/\\/pused","zbus/metric/v2/local/vfs.fs.dependent.size/\\/total","zbus/metric/v2/local/vfs.fs.dependent.size/\\/used","zbus/metric/v2/local/vfs.fs.dependent.size/\\boot/pused","zbus/metric/v2/local/vfs.fs.dependent.size/\\boot/total","zbus/metric/v2/local/vfs.fs.dependent.size/\\boot/used","zbus/metric/v2/local/vfs.fs.dependent/\\/data","zbus/metric/v2/local/vfs.fs.dependent/\\/readonly","zbus/metric/v2/local/vfs.fs.dependent/\\boot/data","zbus/metric/v2/local/vfs.fs.dependent/\\boot/readonly","zbus/metric/v2/local/vm.memory.size/available","zbus/metric/v2/local/vm.memory.size/pavailable","zbus/metric/v2/local/vm.memory.size/total","zbus/metric/v2/local/vm.memory.utilization","zbus/metric/v2/local/zabbix/connector_queue","zbus/metric/v2/local/zabbix/host/agent/available","zbus/metric/v2/local/zabbix/lld_queue","zbus/metric/v2/local/zabbix/preprocessing_queue","zbus/metric/v2/local/zabbix/process/alert/manager/avg/busy","zbus/metric/v2/local/zabbix/process/alert/syncer/avg/busy","zbus/metric/v2/local/zabbix/process/alerter/avg/busy","zbus/metric/v2/local/zabbix/process/availability/manager/avg/busy","zbus/metric/v2/local/zabbix/process/configuration/syncer/avg/busy","zbus/metric/v2/local/zabbix/process/connector/manager/avg/busy","zbus/metric/v2/local/zabbix/process/connector/worker/avg/busy","zbus/metric/v2/local/zabbix/process/discoverer/avg/busy","zbus/metric/v2/local/zabbix/process/escalator/avg/busy","zbus/metric/v2/local/zabbix/process/history/poller/avg/busy","zbus/metric/v2/local/zabbix/process/history/syncer/avg/busy","zbus/metric/v2/local/zabbix/process/housekeeper/avg/busy","zbus/metric/v2/local/zabbix/process/http/poller/avg/busy","zbus/metric/v2/local/zabbix/process/icmp/pinger/avg/busy","zbus/metric/v2/local/zabbix/process/lld/manager/avg/busy","zbus/metric/v2/local/zabbix/process/lld/worker/avg/busy","zbus/metric/v2/local/zabbix/process/odbc/poller/avg/busy","zbus/metric/v2/local/zabbix/process/poller/avg/busy","zbus/metric/v2/local/zabbix/process/preprocessing/manager/avg/busy","zbus/metric/v2/local/zabbix/process/preprocessing/worker/avg/busy","zbus/metric/v2/local/zabbix/process/proxy/poller/avg/busy","zbus/metric/v2/local/zabbix/process/self-monitoring/avg/busy","zbus/metric/v2/local/zabbix/process/service/manager/avg/busy","zbus/metric/v2/local/zabbix/process/task/manager/avg/busy","zbus/metric/v2/local/zabbix/process/timer/avg/busy","zbus/metric/v2/local/zabbix/process/trapper/avg/busy","zbus/metric/v2/local/zabbix/process/trigger/housekeeper/avg/busy","zbus/metric/v2/local/zabbix/process/unreachable/poller/avg/busy","zbus/metric/v2/local/zabbix/queue","zbus/metric/v2/local/zabbix/queue/10m","zbus/metric/v2/local/zabbix/rcache/buffer/pused","zbus/metric/v2/local/zabbix/tcache/cache/pitems","zbus/metric/v2/local/zabbix/tcache/cache/pmisses","zbus/metric/v2/local/zabbix/vcache/buffer/pused","zbus/metric/v2/local/zabbix/vcache/cache/hits","zbus/metric/v2/local/zabbix/vcache/cache/misses","zbus/metric/v2/local/zabbix/vcache/cache/mode","zbus/metric/v2/local/zabbix/wcache/history/pused","zbus/metric/v2/local/zabbix/wcache/index/pused","zbus/metric/v2/local/zabbix/wcache/trend/pused","zbus/metric/v2/local/zabbix/wcache/values","zbus/metric/v2/local/zabbix/wcache/values/float","zbus/metric/v2/local/zabbix/wcache/values/log","zbus/metric/v2/local/zabbix/wcache/values/not/supported","zbus/metric/v2/local/zabbix/wcache/values/str","zbus/metric/v2/local/zabbix/wcache/values/text","zbus/metric/v2/local/zabbix/wcache/values/uint"],"id":"id"}
+```
+
+### last - last received value for specific metrics
+
+This call returns the last received value
+
+```bash
+curl -X POST -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"id","method":"last","params":["zbus/metric/v2/local/system.uptime"]}' http://127.0.0.1:10060
+```
+
+Will return
+
+```json
+{"jsonrpc":"2.0","result":1809559,"id":"id"}
+```
+
+### sample - returns a sampled values
+
+This call will return last 128 or less sampled values for the metric.
+
+```bach
+curl -X POST -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":"id","method":"sample","params":["zbus/metric/v2/local/system.uptime"]}' http://127.0.0.1:10060
+```
+
+Will return
+
+```json
+{"jsonrpc":"2.0","result":[1808809,1808839,1808869,1808899,1808929,1808959,1808989,1809019,1809049,1809079,1809109,1809139,1809169,1809199,1809229,1809259,1809289,1809319,1809350,1809380,1809409,1809439,1809469,1809499,1809529,1809559,1809589],"id":"id"}
 ```
 
 ## Real-time metrics computation

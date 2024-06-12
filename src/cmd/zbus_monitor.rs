@@ -6,7 +6,7 @@ use zenoh::prelude::sync::*;
 use zenoh::config::{Config, ConnectConfig, ListenConfig, EndPoint, WhatAmI};
 
 pub fn run(_c: &cmd::Cli, monitor: &cmd::Monitor)  {
-    log::trace!("zbus_monitor::run() reached");
+    log::debug!("zbus_monitor::run() reached");
     let mut config =  Config::default();
 
     if monitor.zbus_disable_multicast_scout.clone() {
