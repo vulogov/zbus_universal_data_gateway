@@ -1,6 +1,6 @@
 [package]
 name = "zbusdg"
-version = "0.8.0"
+version = "0.8.1"
 edition = "2021"
 description = "Universal Data Gateway for ZBUS project"
 license-file = "LICENSE"
