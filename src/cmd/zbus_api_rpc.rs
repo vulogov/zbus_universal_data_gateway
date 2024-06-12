@@ -16,6 +16,8 @@ pub trait Rpc {
 	fn last(&self, key: String) -> Result<serde_json::Value>;
     #[rpc(name = "sample")]
 	fn sample(&self, key: String) -> Result<serde_json::Value>;
+    #[rpc(name = "metrics")]
+	fn metrics(&self) -> Result<serde_json::Value>;
 }
 
 pub struct RpcImpl;
@@ -45,6 +47,9 @@ impl Rpc for RpcImpl {
                 return Ok(serde_json::json!(null));
             }
         }
+	}
+    fn metrics(&self) -> Result<serde_json::Value> {
+		return Ok(serde_json::json!(cmd::zbus_api::get_keys()))
 	}
 }
 

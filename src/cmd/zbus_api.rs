@@ -46,6 +46,16 @@ pub fn get_metric(k: String) -> Option<cmd::zbus_value_sampler::ValueSampler> {
     return Some(sample);
 }
 
+pub fn get_keys() -> Vec<String> {
+    let mut res: Vec<String> = Vec::new();
+    let s = SAMPLES.lock().unwrap();
+    for k in s.keys() {
+        res.push(k.clone());
+    }
+    drop(s);
+    return res;
+}
+
 pub fn run(c: &cmd::Cli, apicli: &cmd::Api)  {
     log::debug!("zbus_api::run() reached");
     let mut config =  Config::default();
