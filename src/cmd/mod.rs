@@ -13,13 +13,17 @@ pub mod zabbix_lib;
 pub mod zbus_convertkey;
 pub mod zbus_gateway;
 pub mod zbus_monitor;
+pub mod zbus_pipeline;
 pub mod zbus_api;
 pub mod zbus_api_rpc;
 pub mod zbus_gateway_processor;
 pub mod zbus_gateway_processor_passthrough;
 pub mod zbus_gateway_processor_filter;
+pub mod zbus_pipeline_filter;
 pub mod zbus_gateway_processor_transformation;
+pub mod zbus_pipeline_transformation;
 pub mod zbus_gateway_processor_analysis;
+pub mod zbus_pipeline_analysis;
 pub mod zbus_gateway_processor_prometheus;
 pub mod zbus_gateway_stdout_sender;
 pub mod zbus_gateway_zbus_sender;
@@ -43,6 +47,9 @@ pub mod zbus_json;
 pub mod zbus_rhai;
 pub mod zbus_sampler;
 pub mod zbus_value_sampler;
+pub mod zbus_thread_filter;
+pub mod zbus_thread_transformation;
+pub mod zbus_thread_analysis;
 
 
 pub fn init() {
@@ -64,6 +71,10 @@ pub fn init() {
         Commands::Api(apicli) => {
             log::debug!("Execute ZBUS Monitor");
             zbus_api::run(&cli, &apicli);
+        }
+        Commands::Pipeline(pipeline) => {
+            log::debug!("Execute ZBUS pipelines");
+            zbus_pipeline::run(&cli, &pipeline);
         }
         Commands::ConvertKey(convertkey) => {
             log::debug!("Generate ZabbixAPI token");
@@ -189,10 +200,50 @@ pub struct Api {
 }
 
 #[derive(Args, Clone, Debug)]
+#[clap(about="Run ZBUS telementry pipelines")]
+pub struct Pipeline {
+    #[clap(help="ZBUS address", long, default_value_t = String::from(env::var("ZBUS_ADDRESS").unwrap_or("tcp/127.0.0.1:7447".to_string())))]
+    pub zbus_recv_connect: String,
+
+    #[clap(help="ZBUS listen address", long, default_value_t = String::from_utf8(vec![]).unwrap())]
+    pub zbus_recv_listen: String,
+
+    #[clap(help="ZBUS topic to subscribe", long )]
+    pub zbus_recv_key: Vec<String>,
+
+    pub zbus_send_connect: String,
+
+    #[clap(help="ZBUS listen address", long, default_value_t = String::from_utf8(vec![]).unwrap())]
+    pub zbus_send_listen: String,
+
+    #[clap(help="ZBUS topic to subscribe", long)]
+    pub zbus_send_key: Vec<String>,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Disable multicast discovery of ZENOH bus")]
+    pub zbus_disable_multicast_scout: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Configure CONNECT mode for ZENOH bus")]
+    pub zbus_set_connect_mode: bool,
+
+    #[arg(short, long, value_name = "SCRIPT", help="Run scripting filtering and transformation")]
+    script: Option<PathBuf>,
+
+    #[clap(long, default_value_t = 7, help="Width of anomalies window")]
+    pub anomalies_window: usize,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Add analythical collection and capabilities to the in-line telemetry processing")]
+    pub analysis: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Monitor elapsed time for JSON batch processing")]
+    pub telemetry_monitor_elapsed: bool,
+
+}
+
+#[derive(Args, Clone, Debug)]
 #[clap(about="Execute ZBUS Universal Data Gateway")]
 pub struct Gateway {
 
-    #[arg(short, long, value_name = "SCRIPT")]
+    #[arg(short, long, value_name = "SCRIPT", help="Run scripting filtering and transformation")]
     script: Option<PathBuf>,
 
     #[clap(help="Zabbix AUTH token", long, default_value_t = String::from(""))]
@@ -377,5 +428,6 @@ enum Commands {
     Gateway(Gateway),
     Monitor(Monitor),
     Api(Api),
+    Pipeline(Pipeline),
     Version(Version),
 }
