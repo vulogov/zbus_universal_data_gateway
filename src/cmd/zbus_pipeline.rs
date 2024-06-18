@@ -6,15 +6,60 @@ use std::str::FromStr;
 use zenoh::config::{Config, ConnectConfig, ListenConfig, EndPoint, WhatAmI};
 use zenoh::prelude::sync::*;
 
-pub fn pipeline_bus_channel(_c: &cmd::Cli, topic: String, zc: Config)  {
+pub fn pipeline_bus_channel(_c: &cmd::Cli, pipeline: cmd::Pipeline, topic: String)  {
 
     match stdlib::threads::THREADS.lock() {
         Ok(t) => {
             t.execute(move ||
             {
                 log::debug!("Bus->Channel thread has been started for {}", &topic);
+                let mut config_in =  Config::default();
+
+                if pipeline.zbus_disable_multicast_scout.clone() {
+                    match config_in.scouting.multicast.set_enabled(Some(false)) {
+                        Ok(_) => { log::debug!("Multicast discovery disabled")}
+                        Err(err) => {
+                            log::error!("Failure in disabling multicast discovery: {:?}", err);
+                            return;
+                        }
+                    }
+                } else {
+                    log::debug!("Multicast discovery enabled");
+                }
+                match EndPoint::from_str(&pipeline.zbus_recv_connect) {
+                    Ok(zconn) => {
+                        log::debug!("ZENOH bus set to: {:?}", &zconn);
+                        let _ = config_in.set_connect(ConnectConfig::new(vec![zconn]).unwrap());
+                    }
+                    Err(err) => {
+                        log::error!("Failure in parsing connect address: {:?}", err);
+                        return;
+                    }
+                }
+                match EndPoint::from_str(&pipeline.zbus_recv_listen) {
+                    Ok(zlisten) => {
+                        log::debug!("ZENOH listen set to: {:?}", &zlisten);
+                        let _ = config_in.set_listen(ListenConfig::new(vec![zlisten]).unwrap());
+                    }
+                    Err(_) => {
+                        log::debug!("ZENOH listen set to default");
+                    }
+                }
+                if pipeline.zbus_set_connect_mode {
+                    log::debug!("ZENOH configured in CONNECT mode");
+                    let _ = config_in.set_mode(Some(WhatAmI::Client));
+                } else {
+                    log::debug!("ZENOH configured in PEER mode");
+                    let _ = config_in.set_mode(Some(WhatAmI::Peer));
+                }
+                if config_in.validate() {
+                    log::debug!("ZENOH config is OK");
+                } else {
+                    log::error!("ZENOH config not OK");
+                    return;
+                }
                 'outside: loop {
-                    match zenoh::open(zc.clone()).res() {
+                    match zenoh::open(config_in.clone()).res() {
                         Ok(session) => {
                             match session.declare_subscriber(&topic)
                                     .callback_mut(move |sample| {
@@ -38,7 +83,7 @@ pub fn pipeline_bus_channel(_c: &cmd::Cli, topic: String, zc: Config)  {
                                     })
                                     .res() {
                                 Ok(_) => {
-                                    let receiver = match zenoh::scout(WhatAmI::Peer, zc.clone())
+                                    let receiver = match zenoh::scout(WhatAmI::Peer, config_in.clone())
                                         .res() {
                                             Ok(receiver) => receiver,
                                             Err(err) => {
@@ -75,53 +120,12 @@ pub fn pipeline_bus_channel(_c: &cmd::Cli, topic: String, zc: Config)  {
 
 }
 
-// pub fn pipeline_channel_bus(c: cmd::Cli, topic: String, zc: Config)  {
-//
-//     match stdlib::threads::THREADS.lock() {
-//         Ok(t) => {
-//             t.execute(move ||
-//             {
-//                 log::debug!("Channel->Bus thread has been started for {}", &bus_key);
-//                 match zenoh::open(zc.clone()).res() {
-//                     Ok(session) => {
-//                         let pipeline_name = format!("zbus/pipeline/{}/{}", &c.protocol_version, &bus_key);
-//                         loop {
-//                             if ! zbus_lib::bus::channel::pipe_is_empty_raw(c_name.clone()) {
-//                                 log::debug!("Processing data in {} channel to {}", &c_name, &pipeline_name);
-//                                 while ! zbus_lib::bus::channel::pipe_is_empty_raw(c_name.clone()) {
-//                                     match zbus_lib::bus::channel::pipe_pull_raw(c_name.clone()) {
-//                                         Ok(res) => {
-//                                             let _ = session.put(pipeline_name.clone(), res.clone()).encoding(KnownEncoding::AppJson).res();
-//                                         }
-//                                         Err(err) => log::error!("Error getting data from ZBUS: {:?}", err),
-//                                     }
-//                                 }
-//                             }
-//                             zbus_lib::system::system_module::sleep(1);
-//                         }
-//                     }
-//                     Err(err) => {
-//                         log::error!("Error opening Bus() session: {:?}", err);
-//                     }
-//                 }
-//             });
-//             drop(t);
-//         }
-//         Err(err) => {
-//             log::error!("Error accessing Thread Manager: {:?}", err);
-//             return;
-//         }
-//     }
-//
-// }
+pub fn pipeline_channel_bus(_c: &cmd::Cli, pipeline: cmd::Pipeline, topic: String)  {
 
-pub fn run(c: &cmd::Cli, pipeline: &cmd::Pipeline)  {
-    log::debug!("zbus_pipeline::run() reached");
-
-    let mut config_in =  Config::default();
+    let mut config_out =  Config::default();
 
     if pipeline.zbus_disable_multicast_scout.clone() {
-        match config_in.scouting.multicast.set_enabled(Some(false)) {
+        match config_out.scouting.multicast.set_enabled(Some(false)) {
             Ok(_) => { log::debug!("Multicast discovery disabled")}
             Err(err) => {
                 log::error!("Failure in disabling multicast discovery: {:?}", err);
@@ -131,20 +135,20 @@ pub fn run(c: &cmd::Cli, pipeline: &cmd::Pipeline)  {
     } else {
         log::debug!("Multicast discovery enabled");
     }
-    match EndPoint::from_str(&pipeline.zbus_recv_connect) {
+    match EndPoint::from_str(&pipeline.zbus_send_connect) {
         Ok(zconn) => {
             log::debug!("ZENOH bus set to: {:?}", &zconn);
-            let _ = config_in.set_connect(ConnectConfig::new(vec![zconn]).unwrap());
+            let _ = config_out.set_connect(ConnectConfig::new(vec![zconn]).unwrap());
         }
         Err(err) => {
             log::error!("Failure in parsing connect address: {:?}", err);
             return;
         }
     }
-    match EndPoint::from_str(&pipeline.zbus_recv_listen) {
+    match EndPoint::from_str(&pipeline.zbus_send_listen) {
         Ok(zlisten) => {
             log::debug!("ZENOH listen set to: {:?}", &zlisten);
-            let _ = config_in.set_listen(ListenConfig::new(vec![zlisten]).unwrap());
+            let _ = config_out.set_listen(ListenConfig::new(vec![zlisten]).unwrap());
         }
         Err(_) => {
             log::debug!("ZENOH listen set to default");
@@ -152,17 +156,59 @@ pub fn run(c: &cmd::Cli, pipeline: &cmd::Pipeline)  {
     }
     if pipeline.zbus_set_connect_mode {
         log::debug!("ZENOH configured in CONNECT mode");
-        let _ = config_in.set_mode(Some(WhatAmI::Client));
+        let _ = config_out.set_mode(Some(WhatAmI::Client));
     } else {
         log::debug!("ZENOH configured in PEER mode");
-        let _ = config_in.set_mode(Some(WhatAmI::Peer));
+        let _ = config_out.set_mode(Some(WhatAmI::Peer));
     }
-    if config_in.validate() {
+    if config_out.validate() {
         log::debug!("ZENOH config is OK");
     } else {
         log::error!("ZENOH config not OK");
         return;
     }
+
+    match stdlib::threads::THREADS.lock() {
+        Ok(t) => {
+            t.execute(move ||
+            {
+                log::debug!("Channel->Bus thread has been started for {}", &topic);
+                match zenoh::open(config_out.clone()).res() {
+                    Ok(session) => {
+                        loop {
+                            if ! stdlib::channel::pipe_is_empty_raw("out".to_string()) {
+                                while ! stdlib::channel::pipe_is_empty_raw("out".to_string()) {
+                                    match stdlib::channel::pipe_pull("out".to_string()) {
+                                        Ok(res) => {
+                                            log::debug!("Processing data len()={} OUT to {}", &res.len(), &topic);
+                                            let _ = session.put(topic.clone(), res.clone()).encoding(KnownEncoding::AppJson).res();
+                                        }
+                                        Err(err) => log::error!("Error getting data from ZBUS: {:?}", err),
+                                    }
+                                }
+                            }
+                            stdlib::sleep::sleep(1);
+                        }
+                    }
+                    Err(err) => {
+                        log::error!("Error opening Bus() session: {:?}", err);
+                    }
+                }
+            });
+            drop(t);
+        }
+        Err(err) => {
+            log::error!("Error accessing Thread Manager: {:?}", err);
+            return;
+        }
+    }
+
+}
+
+pub fn run(c: &cmd::Cli, pipeline: &cmd::Pipeline)  {
+    log::debug!("zbus_pipeline::run() reached");
+
+
 
     match &pipeline.script {
         Some(fname) => {
@@ -185,10 +231,24 @@ pub fn run(c: &cmd::Cli, pipeline: &cmd::Pipeline)  {
         log::debug!("Analythical collection and enchancing is OFF");
     }
 
-    for n in &pipeline.zbus_recv_key {
-        log::debug!("Launching processor for pipeline {}", n);
-        pipeline_bus_channel(c, n.clone(), config_in.clone());
+    if pipeline.logs_analysis {
+        log::debug!("Logs analythical enchancing is ON");
+        cmd::zbus_pipeline_logs_analysis::processor(c, pipeline);
+    } else {
+        log::debug!("Logs analythical enchancing is OFF");
     }
+
+    for n in &pipeline.zbus_recv_key {
+        log::debug!("Launching receiver for pipeline {}", n);
+        pipeline_bus_channel(c, pipeline.clone(), n.clone());
+    }
+
+    for n in &pipeline.zbus_send_key {
+        log::debug!("Launching sender for pipeline {}", n);
+        pipeline_channel_bus(c, pipeline.clone(), n.clone());
+    }
+
+    cmd::zbus_gateway_processor_pipeline::processor(c, pipeline);
 
     stdlib::threads::wait_all();
 }

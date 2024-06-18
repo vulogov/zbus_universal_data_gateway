@@ -39,3 +39,30 @@ pub fn generate_json_telemetry(c: &cmd::Cli, dst: String, name: String, ctype: u
         "id": nanoid!(),
     })
 }
+
+pub fn zjson_get_data(zjson: Value) -> Option<Value> {
+    let d = match cmd::zbus_gateway_processor::zabbix_json_get_sub_subkey_raw(&zjson, "body".to_string(), "details".to_string(), "details".to_string()) {
+        Some(d) => d,
+        None => return None,
+    };
+    let data = match cmd::zbus_gateway_processor::zabbix_json_get_raw(&d, "data".to_string()) {
+        Some(d) => d,
+        None => return None,
+    };
+    Some(data)
+}
+
+pub fn zjson_get_datatype(zjson: Value) -> Option<usize> {
+    let d = match cmd::zbus_gateway_processor::zabbix_json_get_sub_subkey_raw(&zjson, "body".to_string(), "details".to_string(), "details".to_string()) {
+        Some(d) => d,
+        None => return None,
+    };
+    let data = match cmd::zbus_gateway_processor::zabbix_json_get_raw(&d, "contentType".to_string()) {
+        Some(d) => d,
+        None => return None,
+    };
+    match data.as_i64() {
+        Some(ct) => return Some(ct as usize),
+        None => return None,
+    }
+}

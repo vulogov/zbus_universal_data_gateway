@@ -18,12 +18,15 @@ pub mod zbus_api;
 pub mod zbus_api_rpc;
 pub mod zbus_gateway_processor;
 pub mod zbus_gateway_processor_passthrough;
+pub mod zbus_gateway_processor_pipeline;
 pub mod zbus_gateway_processor_filter;
 pub mod zbus_pipeline_filter;
 pub mod zbus_gateway_processor_transformation;
 pub mod zbus_pipeline_transformation;
 pub mod zbus_gateway_processor_analysis;
+pub mod zbus_gateway_processor_logs_analysis;
 pub mod zbus_pipeline_analysis;
+pub mod zbus_pipeline_logs_analysis;
 pub mod zbus_gateway_processor_prometheus;
 pub mod zbus_gateway_stdout_sender;
 pub mod zbus_gateway_zbus_sender;
@@ -50,6 +53,8 @@ pub mod zbus_value_sampler;
 pub mod zbus_thread_filter;
 pub mod zbus_thread_transformation;
 pub mod zbus_thread_analysis;
+pub mod zbus_thread_logs_analysis;
+pub mod zbus_loader_logs_categorization;
 
 
 pub fn init() {
@@ -57,7 +62,7 @@ pub fn init() {
     let cli = Cli::parse();
     setloglevel::setloglevel(&cli);
     stdlib::initlib(&cli);
-
+    zbus_loader_logs_categorization::run(&cli);
     match &cli.command {
         Commands::Gateway(gateway) => {
             log::debug!("Execute ZBUSDG");
@@ -124,6 +129,9 @@ pub struct Cli {
 
     #[clap(long, default_value_t = 3600, help="Timeout for Zabbix ITEMS cache")]
     pub item_cache_timeout: u16,
+
+    #[arg(short, long, value_name = "LOGS_CATEGORIES", help="HJSON dictionary for logs telemetry categorization")]
+    logs_categorization: Option<PathBuf>,
 
     #[clap(subcommand)]
     command: Commands,
@@ -202,7 +210,7 @@ pub struct Api {
 #[derive(Args, Clone, Debug)]
 #[clap(about="Run ZBUS telementry pipelines")]
 pub struct Pipeline {
-    #[clap(help="ZBUS address", long, default_value_t = String::from(env::var("ZBUS_ADDRESS").unwrap_or("tcp/127.0.0.1:7447".to_string())))]
+    #[clap(help="ZBUS receiving address", long, default_value_t = String::from(env::var("ZBUS_RECV_ADDRESS").unwrap_or("tcp/127.0.0.1:7447".to_string())))]
     pub zbus_recv_connect: String,
 
     #[clap(help="ZBUS listen address", long, default_value_t = String::from_utf8(vec![]).unwrap())]
@@ -211,6 +219,7 @@ pub struct Pipeline {
     #[clap(help="ZBUS topic to subscribe", long )]
     pub zbus_recv_key: Vec<String>,
 
+    #[clap(help="ZBUS sending address", long, default_value_t = String::from(env::var("ZBUS_SEND_ADDRESS").unwrap_or("tcp/127.0.0.1:7447".to_string())))]
     pub zbus_send_connect: String,
 
     #[clap(help="ZBUS listen address", long, default_value_t = String::from_utf8(vec![]).unwrap())]
@@ -233,6 +242,9 @@ pub struct Pipeline {
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Add analythical collection and capabilities to the in-line telemetry processing")]
     pub analysis: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Add analythical collection and capabilities to the in-line logs processing")]
+    pub logs_analysis: bool,
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Monitor elapsed time for JSON batch processing")]
     pub telemetry_monitor_elapsed: bool,
@@ -257,6 +269,9 @@ pub struct Gateway {
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Add analythical collection and capabilities to the in-line telemetry processing")]
     pub analysis: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Add analythical collection and capabilities to the in-line logs processing")]
+    pub logs_analysis: bool,
 
     #[clap(long, action = clap::ArgAction::SetTrue, help="Monitor elapsed time for JSON batch processing")]
     pub telemetry_monitor_elapsed: bool,

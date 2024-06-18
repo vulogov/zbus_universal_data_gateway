@@ -5,15 +5,15 @@ use etime::Etime;
 use serde_json::{json, Deserializer, Value};
 
 
-pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
-    log::trace!("zbus_gateway_processor_passthrough::run() reached");
+pub fn processor(c: &cmd::Cli, pipeline: &cmd::Pipeline)  {
+    log::trace!("zbus_gateway_processor_pipeline::run() reached");
     let c = c.clone();
-    let gateway = gateway.clone();
+    let pipeline = pipeline.clone();
     match stdlib::threads::THREADS.lock() {
         Ok(t) => {
             t.execute(move ||
             {
-                log::debug!("PROCESSOR PASSTHROUGH thread has been started");
+                log::debug!("PROCESSOR PIPELINE thread has been started");
                 loop {
                     if ! stdlib::channel::pipe_is_empty_raw("in".to_string()) {
                         match stdlib::channel::pipe_pull("in".to_string()) {
@@ -33,29 +33,27 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                 Some(key) => format!("zbus/metric/{}/{}{}", &c.protocol_version, &c.platform_name, key.as_str().unwrap()),
                                                 None => continue,
                                             };
-                                            if ! gateway.group.none {
-                                                match &gateway.script {
-                                                    Some(_) => {
-                                                        stdlib::channel::pipe_push("filter".to_string(), zjson.to_string());
-                                                    }
-                                                    None => {
-                                                        if gateway.logs_analysis {
-                                                            match cmd::zbus_json::zjson_get_datatype(zjson.clone()) {
-                                                                Some(ct) => {
-                                                                    if ct == 2 {
-                                                                        log::debug!("Pushing {} for logs_analysis", &itemkey);
-                                                                        stdlib::channel::pipe_push("logs_analysis".to_string(), zjson.to_string());
-                                                                        continue;
-                                                                    }
+                                            match &pipeline.script {
+                                                Some(_) => {
+                                                    stdlib::channel::pipe_push("filter".to_string(), zjson.to_string());
+                                                }
+                                                None => {
+                                                    if pipeline.logs_analysis {
+                                                        match cmd::zbus_json::zjson_get_datatype(zjson.clone()) {
+                                                            Some(ct) => {
+                                                                if ct == 2 {
+                                                                    log::debug!("Pushing {} for logs_analysis", &itemkey);
+                                                                    stdlib::channel::pipe_push("logs_analysis".to_string(), zjson.to_string());
+                                                                    continue;
                                                                 }
-                                                                None => {},
                                                             }
+                                                            None => {},
                                                         }
-                                                        if gateway.analysis {
-                                                            stdlib::channel::pipe_push("analysis".to_string(), zjson.to_string());
-                                                        } else {
-                                                            stdlib::channel::pipe_push("out".to_string(), zjson.to_string());
-                                                        }
+                                                    }
+                                                    if pipeline.analysis {
+                                                        stdlib::channel::pipe_push("analysis".to_string(), zjson.to_string());
+                                                    } else {
+                                                        stdlib::channel::pipe_push("out".to_string(), zjson.to_string());
                                                     }
                                                 }
                                             }
@@ -67,11 +65,9 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                 }
                                 let elapsed = e.toc().as_secs_f32();
                                 log::debug!("Elapsed time for processing: {} seconds", elapsed);
-                                if gateway.telemetry_monitor_elapsed {
+                                if pipeline.telemetry_monitor_elapsed {
                                     let data = cmd::zbus_json::generate_json_telemetry(&c, "/zbus/udg/elapsed".to_string(), "Elapsed time for JSON batch processing".to_string(), 3, json!(elapsed));
-                                    if ! gateway.group.none {
-                                        stdlib::channel::pipe_push("out".to_string(), data.to_string());
-                                    }
+                                    stdlib::channel::pipe_push("out".to_string(), data.to_string());
                                 }
                             }
                             Err(err) => log::error!("Error getting data from channel: {:?}", err),

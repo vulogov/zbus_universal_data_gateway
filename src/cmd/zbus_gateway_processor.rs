@@ -238,6 +238,7 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                 None => continue,
                                             };
                                             let full_zbus_itemkey = format!("zbus/metric/{}/{}{}", &c.protocol_version, &c.platform_name, &zbus_itemkey);
+                                            let content_type = zabbix_json_get(&zjson, "type".to_string());
                                             let data = json!({
                                                 "headers": {
                                                     "messageType":      "telemetry",
@@ -265,7 +266,7 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                         },
                                                         "details":  {
                                                             "detailType":   "",
-                                                            "contentType":  zabbix_json_get(&zjson, "type".to_string()),
+                                                            "contentType":  content_type,
                                                             "data":         zabbix_json_get(&zjson, "value".to_string()),
                                                         }
                                                     }
@@ -278,6 +279,13 @@ pub fn processor(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                         stdlib::channel::pipe_push("filter".to_string(), data.to_string());
                                                     }
                                                     None => {
+                                                        if gateway.logs_analysis {
+                                                            if content_type.as_i64().unwrap() == 2 {
+                                                                log::debug!("Pushing {} for logs_analysis", &itemkey);
+                                                                stdlib::channel::pipe_push("logs_analysis".to_string(), data.to_string());
+                                                                continue;
+                                                            }
+                                                        }
                                                         if gateway.analysis {
                                                             log::debug!("Pushing {} for analysis", &itemkey);
                                                             stdlib::channel::pipe_push("analysis".to_string(), data.to_string());
