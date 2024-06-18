@@ -1,6 +1,6 @@
 [package]
 name = "zbusdg"
-version = "0.8.0"
+version = "0.8.2"
 edition = "2021"
 description = "Universal Data Gateway for ZBUS project"
 license-file = "LICENSE"
@@ -62,6 +62,8 @@ jsonrpc-core = "18.0.0"
 jsonrpc-derive = "18.0.0"
 jsonrpc-http-server = "18.0.0"
 jsonrpc-core-client = "18.0.0"
+serde-hjson = "0.9.1"
+natural = "0.5.0"
 
 [dependencies.rhai]
 version = "1.18.*"

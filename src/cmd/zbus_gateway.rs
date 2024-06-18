@@ -43,6 +43,13 @@ pub fn run(c: &cmd::Cli, gateway: &cmd::Gateway)  {
         log::debug!("Analythical collection and enchancing is OFF");
     }
 
+    if gateway.logs_analysis {
+        log::debug!("Logs analythical enchancing is ON");
+        cmd::zbus_gateway_processor_logs_analysis::processor(c, gateway);
+    } else {
+        log::debug!("Logs analythical enchancing is OFF");
+    }
+
     if gateway.group.stdout {
         cmd::zbus_gateway_stdout_sender::sender(c, gateway);
     } else if gateway.group.socket {

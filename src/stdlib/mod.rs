@@ -13,6 +13,8 @@ pub mod fixedqueue;
 pub mod traits;
 pub mod syslog;
 pub mod zabbix;
+pub mod metric_samples;
+pub mod logs_categorization;
 
 use crate::cmd::{Cli};
 
