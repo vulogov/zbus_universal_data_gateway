@@ -365,3 +365,45 @@ Will return
 ## Real-time metrics computation
 
 If you want to enable real-time metrics computation, you can use the --analysis CLI argument to activate the "Analysis" mode for the Universal Data Gateway (ZBUSUDG). This mode allows ZBUSUDG to perform real-time statistical computations and forecasts while collecting telemetry data. ZBUSUDG will gather the most recent 128 float-point type telemetry samples. Then it will then enhance relevant metric with additional data attributes such as mean, max, min, variance, standard deviation, statistical oscillation, statistical time series forecast, anomalies detection using statistical analysis, breakouts in a sample and forecasting using Markov chains of the sample.
+
+### Real-time logs analysis
+
+If you are pass CLI option --logs-analysis , you will launch log analysis threads and will enchance all logs telemetry with logs analysis data.
+
+```json
+{
+  "body": {
+    "details": {
+      "destination": "zbus/log/syslog",
+      "details": {
+        "analytical_data": {
+          "category": "ssh"
+        },
+        "contentType": 2,
+        "data": "syslog[85654]: Failed password from root",
+        "detailType": ""
+      },
+      "origin": "home.lan",
+      "properties": {
+        "syslog_appname": "unknown",
+        "syslog_facility": 0,
+        "syslog_procid": "unknown",
+        "syslog_severity": 7,
+        "syslog_version": 0,
+        "timestamp": 1718680671000000000,
+        "zabbix_item": "log[/var/log/syslog]"
+      }
+    }
+  },
+  "headers": {
+    "compressionAlgorithm": null,
+    "cultureCode": null,
+    "encryptionAlgorithm": null,
+    "messageType": "telemetry",
+    "route": "local",
+    "streamName": "local",
+    "version": "v2"
+  },
+  "id": "Ez2JWwSDsOZN-74gPF6dr"
+}
+```
