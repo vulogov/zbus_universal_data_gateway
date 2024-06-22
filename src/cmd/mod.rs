@@ -46,6 +46,11 @@ pub mod zbus_gateway_catcher_syslogd;
 pub mod zbus_gateway_catcher_prometheus_scraper;
 pub mod zbus_version;
 pub mod zbus_login;
+pub mod zbus_alerts;
+pub mod zbus_alerts_zabbix;
+pub mod zbus_alerts_processor;
+pub mod zbus_alerts_processor_filter;
+pub mod zbus_alerts_processor_transformation;
 pub mod zbus_json;
 pub mod zbus_rhai;
 pub mod zbus_sampler;
@@ -54,6 +59,7 @@ pub mod zbus_thread_filter;
 pub mod zbus_thread_transformation;
 pub mod zbus_thread_analysis;
 pub mod zbus_thread_logs_analysis;
+pub mod zbus_thread_zbus_sender;
 pub mod zbus_loader_logs_categorization;
 
 
@@ -80,6 +86,10 @@ pub fn init() {
         Commands::Pipeline(pipeline) => {
             log::debug!("Execute ZBUS pipelines");
             zbus_pipeline::run(&cli, &pipeline);
+        }
+        Commands::Alerts(alerts) => {
+            log::debug!("Execute ZBUS alerts");
+            zbus_alerts::run(&cli, &alerts);
         }
         Commands::ConvertKey(convertkey) => {
             log::debug!("Generate ZabbixAPI token");
@@ -129,6 +139,10 @@ pub struct Cli {
 
     #[clap(long, default_value_t = 3600, help="Timeout for Zabbix ITEMS cache")]
     pub item_cache_timeout: u16,
+
+    #[clap(long, default_value_t = 1, help="Number of HELLO received for Zenoh scout")]
+    pub hello_received: usize,
+
 
     #[arg(short, long, value_name = "LOGS_CATEGORIES", help="HJSON dictionary for logs telemetry categorization")]
     logs_categorization: Option<PathBuf>,
@@ -376,6 +390,43 @@ pub struct Gateway {
     group: GatewayArgGroup,
 }
 
+#[derive(Args, Clone, Debug)]
+#[clap(about="Catching and translating Zabbix Alerts")]
+pub struct Alerts {
+
+    #[clap(help="Events source", long, default_value_t = String::from(hostname::get_hostname()))]
+    pub source: String,
+
+    #[clap(long, default_value_t = 1, help="Number of catcher threads")]
+    pub threads: u16,
+
+    #[clap(help="Zabbix AUTH token", long, default_value_t = String::from(""))]
+    pub zabbix_token: String,
+
+    #[clap(help="Listen address for the alerts catcher", long, default_value_t = String::from("0.0.0.0:10056"))]
+    pub listen: String,
+
+    #[clap(help="ZBUS address", long, default_value_t = String::from(env::var("ZBUS_ADDRESS").unwrap_or("tcp/127.0.0.1:7447".to_string())))]
+    pub zbus_connect: String,
+
+    #[clap(help="ZBUS listen address", long, default_value_t = String::from_utf8(vec![]).unwrap())]
+    pub zbus_listen: String,
+
+    #[clap(help="ZBUS key", long, default_value_t = String::from("events"))]
+    pub zbus_key: String,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Disable multicast discovery of ZENOH bus")]
+    pub zbus_disable_multicast_scout: bool,
+
+    #[clap(long, action = clap::ArgAction::SetTrue, help="Configure CONNECT mode for ZENOH bus")]
+    pub zbus_set_connect_mode: bool,
+
+    #[arg(short, long, value_name = "SCRIPT", help="Run scripting filtering and transformation")]
+    script: Option<PathBuf>,
+
+}
+
+
 #[derive(Debug, Clone, clap::Args)]
 #[group(required = true, multiple = false)]
 pub struct GatewayArgGroup {
@@ -444,5 +495,6 @@ enum Commands {
     Monitor(Monitor),
     Api(Api),
     Pipeline(Pipeline),
+    Alerts(Alerts),
     Version(Version),
 }

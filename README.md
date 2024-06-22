@@ -407,3 +407,66 @@ If you are pass CLI option --logs-analysis , you will launch log analysis thread
   "id": "Ez2JWwSDsOZN-74gPF6dr"
 }
 ```
+
+## Real-time Zabbix alerts receive
+
+ZBUSUDG can receive and publish Zabbix alerts to ZBUS universal telemetry bus as a telemetry item, thus implementing the idea "Alerts is a Telemetry data too". You can launch alerts receiver
+
+```bash
+zbusudg alerts
+```
+
+and then you can receive alerts as a telemetry from the Universal Telemetry Bus
+
+```bash
+zbusdg gateway --stdout --pretty --zbus-catcher  --zbus-subscribe-key events
+```
+
+This is the sample of alert
+
+```json
+{
+  "body": {
+    "details": {
+      "destination": "/events",
+      "details": {
+        "contentType": 3,
+        "data": 1,
+        "detailType": ""
+      },
+      "origin": "home.lan",
+      "properties": {
+        "groups": [
+          "Linux servers"
+        ],
+        "name": "SLA triggered",
+        "tags": [
+          {
+            "tag": "SLA",
+            "value": "TEST"
+          }
+        ],
+        "zabbix_clock": 1719087396,
+        "zabbix_eventid": 81,
+        "zabbix_host_name": [
+          {
+            "host": "test_host",
+            "name": "test_host"
+          }
+        ],
+        "zabbix_ns": 170124227
+      }
+    }
+  },
+  "headers": {
+    "compressionAlgorithm": null,
+    "cultureCode": null,
+    "encryptionAlgorithm": null,
+    "messageType": "event",
+    "route": "local",
+    "streamName": "local",
+    "version": "v2"
+  },
+  "id": "iZ6qykdOkpDoRK10rM9Wp"
+}
+```
