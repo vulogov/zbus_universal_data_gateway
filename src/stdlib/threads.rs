@@ -36,7 +36,7 @@ pub fn wait_all() {
 }
 
 pub fn threads_init(c: &cmd::Cli) {
-    log::trace!("Running STDLIB::threads init");
+    log::debug!("Running STDLIB::threads init");
     let mut t = THREADS.lock().unwrap();
     log::debug!("Thread engine has been configured with {} threads", &c.threads);
     t.resize(c.threads as usize);

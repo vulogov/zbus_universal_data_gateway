@@ -16,7 +16,7 @@ lazy_static! {
     };
 }
 
-fn zabbix_json_get(data: &Value, key: String) -> Value {
+pub fn zabbix_json_get(data: &Value, key: String) -> Value {
     match data.get(key) {
         Some(value) => {
             return value.clone();

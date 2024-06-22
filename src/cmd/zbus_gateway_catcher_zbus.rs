@@ -8,6 +8,7 @@ use zenoh::config::{Config, ConnectConfig, ListenConfig, EndPoint, WhatAmI};
 pub fn catcher(c: &cmd::Cli, gateway: &cmd::Gateway)  {
     log::trace!("zbus_gateway_catcher_zbus::run() reached");
     let subscribe_key = format!("zbus/metric/{}/{}/{}", &c.protocol_version, &c.platform_name, &gateway.zbus_subscribe_key);
+    // let subscribe_key = gateway.zbus_subscribe_key.clone();
     let gateway = gateway.clone();
 
     match stdlib::threads::THREADS.lock() {

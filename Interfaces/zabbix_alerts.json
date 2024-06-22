@@ -1,0 +1,25 @@
+{
+  "clock": 1719081343,
+  "ns": 515516610,
+  "value": 1,
+  "eventid": 51,
+  "name": "SLA triggered",
+  "severity": 4,
+  "hosts": [
+    {
+      "host": "test_host",
+      "name": "test_host"
+    }
+  ],
+  "groups": [
+    "Linux servers"
+  ],
+  "tags": [
+    {
+      "tag": "SLA",
+      "value": "TEST"
+    }
+  ]
+}
+
+{"clock":1719081346,"ns":754691765,"value":0,"eventid":52,"p_eventid":51}
