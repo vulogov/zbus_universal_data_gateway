@@ -86,7 +86,7 @@ pub fn sender(c: &cmd::Cli, gateway: &cmd::Gateway)  {
                                                                 }
                                                             } else {
                                                                 let itemkey = match cmd::zbus_gateway_processor::zabbix_json_get_sub_subkey_raw(&zjson, "body".to_string(), "details".to_string(), "destination".to_string()) {
-                                                                    Some(key) => format!("zbus/metric/{}/{}{}", &c.protocol_version, &c.platform_name, key.as_str().unwrap()),
+                                                                    Some(key) => format!("{}", key.as_str().unwrap()),
                                                                     None => continue,
                                                                 };
                                                                 match session.put(itemkey.clone(), payload.clone()).encoding(KnownEncoding::AppJson).res() {
